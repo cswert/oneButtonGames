@@ -46,6 +46,10 @@ Use "npm i -g http-server" and "http-server" for codespace port
 	   	border-radius: 10px;
 		font-size: 5rem;
 	}
+	.overlay {
+		position: absolute;
+		z-index: 1001;
+	}
 	canvas {
 		border: solid;
 	   	border-radius: 10px;
@@ -90,6 +94,28 @@ Use "npm i -g http-server" and "http-server" for codespace port
 	.char::before{
 		content: var(--char);
 	}
+	.opts {
+		height: 3.1rem;
+		width: 10rem;
+		overflow: hidden;
+		z-index: 1;
+		position:absolute;
+		justify-self: center;
+		border: solid;
+	   	border-radius: 10px;
+	}
+	.opts:hover {
+		height: auto;
+		width: auto;
+		background: var(--bc);
+		z-index: 1000;
+		position:absolute;
+		justify-self: center;
+		border: solid;
+	   	border-radius: 10px;
+		padding: 4rem;
+		padding-top: 0;
+	}
 	</style>
 </head>
 
@@ -98,8 +124,7 @@ Use "npm i -g http-server" and "http-server" for codespace port
 		<div id=header class=head>Select A Game</div><br>
 		<div id=main>
 			<select id=game class=drop>
-				<option>Pong</option>
-				<option>Slot Cars</option>
+
 				<option>First to Answer</option>
 				<option>Fastest Clicker</option>
 				<option>Reaction Test</option>
@@ -130,21 +155,33 @@ Use "npm i -g http-server" and "http-server" for codespace port
 				<option>DVD Logos</option>
 				<option>Skill Stop Jackpot</option>
 				<option>Bowling Sorta</option>
+				<option>Pong</option>
 				<option>Kahoot</option>
 			</select>
 			<button class=btn onclick=chooseGame()>Start the Game</button>
 			<button class=btn onclick=resetPlayers()>Clear Players</button>
-			&nbsp FPS: <input id=asdf type=number value=60 min=1 max=100 onchange="{fps=1000/this.value}">
-			&nbsp Diplay: <Select id=type class=drop onchange="displayType=this.value;">
-				<option>HTML</option>
-				<option>Canvas</option>
-				<option>CSS</option>
-			</Select>
+		</div>
+		<div id=opts class=opts>
+			Options<br><br>
+			<div id=options>
+					<Select id=cust class=drop>
+					<option>Colour</option>
+					<!-- <option>Emoji</option> -->
+					<option>Height</option>
+					<option>Width</option>
+				</Select>
+				&nbsp; FPS: <input id=asdf type=number value=60 min=1 max=100 onchange="{fps=1000/this.value}">
+				&nbsp; Diplay: <Select id=type class=drop onchange="displayType=this.value;">
+					<option>HTML</option>
+					<option>Canvas</option>
+					<option>CSS</option>
+				</Select>
+			</div>
 		</div>
 	</div>
 	<br>
 	<div id=gZone style="overflow: hidden;"></div>
-	<div id=sZone></div>
+	<div id=sZone class=overlay></div>
 </body>
 
 <script>
@@ -153,10 +190,11 @@ Readd controller players
 Add player queueing for dynamic arrays
 Add control dials/button for needed games
 Change everything to the same thing for scaling
+Try to remove the subzone
 */
 
 //========================================== Starting Stuff ==========================================
-	let gamemode = "home", fps = 17, assets = [], temp, startScreen = {}, displayType = "HTML";
+	let gamemode = "home", fps = 17, assets = [], temp, config = {}, displayType = "HTML", textOnly = false;
 	let maxX, maxY, timeLimit, currTime = Date.now(); startTime = Date.now();
 	let mousePlayer = false, gameState = 0, canvas, ctx;
 	let players = [{score: 0, pressed: 0, status: 0, colour: "white", id: "M", emoji: "😊"}];
@@ -166,10 +204,11 @@ Change everything to the same thing for scaling
 	}
 
 	function chooseGame() {
-		startScreen.html = main.innerHTML;
-		startScreen.game = document.getElementById('game').selectedIndex;
-		startScreen.asdf = asdf.value
-		startScreen.type = document.getElementById('type').selectedIndex;
+		config.html = main.innerHTML;
+		config.html2 = options.innerHTML;
+		config.game = document.getElementById('game').selectedIndex;
+		config.asdf = asdf.value
+		config.type = document.getElementById('type').selectedIndex;
 		gamemode = game.value.toLowerCase().replace(/[-_\s](.)/g, (_, c) => c.toUpperCase());
 		header.innerHTML = game.value;
 		main.innerHTML = `<button class=btn onclick=goBack();>Go Back</button>&ensp;`;
@@ -186,7 +225,7 @@ Change everything to the same thing for scaling
 				if (!["colour", "id", "emoji","pressed"].includes(key)) delete p[key];
 			}
 			p.score = 0;
-			p.status = 0
+			p.status = 0;
 		}
 		gameState = 0;
 		temp = "";
@@ -197,10 +236,11 @@ Change everything to the same thing for scaling
 
 	function goBack() {
 		topStuff.removeAttribute("style");
-		main.innerHTML = startScreen.html;
-		document.getElementById('game').selectedIndex = startScreen.game;
-		asdf.value = startScreen.asdf;
-		document.getElementById('type').selectedIndex = startScreen.type;
+		main.innerHTML = config.html;
+		options.innerHTML = config.html2;
+		document.getElementById('game').selectedIndex = config.game;
+		asdf.value = config.asdf;
+		document.getElementById('type').selectedIndex = config.type;
 		main.removeAttribute("style");
 		header.innerHTML = "Select A Game";
 		header.removeAttribute("style");
@@ -208,8 +248,10 @@ Change everything to the same thing for scaling
 		gZone.removeAttribute("style");
 		gZone.style.overflow = "hidden";
 		sZone.innerHTML = "";
-		sZone.removeAttribute("style");
+		sZone.style.display = "none";
 		gamemode = "home";
+		opts.style.display = "";
+		textOnly = false;
 		clearGame();
 	}
 
@@ -265,7 +307,7 @@ Change everything to the same thing for scaling
 		// 	}
 		// }
 		window[gamemode]();
-		displayPlayersGame();
+		if (!textOnly) displayPlayersGame();
 		await sleep(fps);
 		gameFrame();
 	}
@@ -274,12 +316,13 @@ Change everything to the same thing for scaling
 
 //============================================= WIP Games ============================================
 	function slotCars() {
-
+		//players move car on a track, too fast and it falls off
+		//falling off has a cooldown before resuming or the acceleration is slow
 	}
 
-	
-
 	function dodgeEm() {
+		//taken from early pong build, players need avoid the incoming obstacles
+		//should be similar to tempest, but no shooting, more like a bullet hell
 		if (gameState == 0) {
 			setPlayerAngles();
 			let radius = Math.min(maxX, maxY) / 2.5;
@@ -304,66 +347,34 @@ Change everything to the same thing for scaling
 	}
 
 	function hungryHippos() {
-
+		//players move into the center and pull any "food" back
+		//fun mode is the players become the food and have to run
 	}
 
 	function war() {
-
+		//players have a meter that will spawn a fighter of size depending on click time
+		//fighters travel to closeset enemy and subract size on collision (might be laggy)
+		//eliminating the player (base) will eliminate the player
 	}
 
-	function firstToAnswer() {
-		if (players.length < 2) {gamemode = "rollCredits"; return;}
-		if (gameState == 0) {
-			gZone.innerHTML = "";
-			temp = [];
-			for (let p of players) {
-				if (p.pressed > startTime) {
-					temp.push(p.id);
-					gameState = 1;
-				}
-			}
-			if (temp.length > 0) gZone.innerHTML = `Player ${temp[(rando.checked) ? 
-				Math.floor(Math.random()*temp.length) : 0]} was first!`;
-		}
-	}
-
-	function fastestClicker() {
-		if (gameState == 0) {
-			timeLimit = currTime + 15000;
-			gameState = 1;
-		}
-		if (gameState == 1) {
-			if (currTime <= timeLimit) {
-				gZone.innerHTML = "SPAM YOUR BUTTON!<br>Time remaining:" + Math.round(timeLimit - currTime);
-				for (let p of players) {
-					if (p.pressed == currTime) {
-						if (rando.checked) (Math.random() < .5) ? p.score-- : p.score++;
-						else p.score++;
-					}
-					if (p.score == 0) continue;
-				}
-				sZone.innerHTML = displayPlayersTable("score");
-			}
-			else {
-				gZone.innerHTML = "Time is UP!<br>"
-				gameState = 2;
-				temp = ["M"];
-				for (let p of players) {
-					if (p.id == "M") continue;
-					if (p.score > players[players.findIndex(P => P.id === temp[0])].score) temp = [p.id];
-					else if (p.score == players[players.findIndex(P => P.id === temp[0])].score) temp.push(p.id);
-				}
-				gZone.innerHTML += `Player${(temp.length > 1) ? "s" : ""} ${temp.join(", ")} won with 
-				${players[players.findIndex(P => P.id === temp[0])].score} clicks<br><br>`;
-			}
-		}
-	}
+	// assets = [{
+	// 	text: `Player ${winner.id} won!`,
+	// 	x: 0, y: maxY/2, w:maxX, h:0, id: "win", colour: "transparent"
+	// }];
+	// opts.style.display = "none";
+	// for (let p of players) {
+	// 	p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
+	// 	p.y = maxY/3; p.w = Math.min(50,maxX/players.length/5); p.h = p.w;
+	// }
 
 	function reactionTest() {
 		if (gameState == 0) {
+			textOnly = true;
+			gZone.innerHTML = "";
+			gZone.setAttribute("style","width:maxX; height:maxY; position: relative; overflow: hidden;");
+			opts.style.display = "none";
 			timeLimit = currTime + Math.random()*9000+1000;
 			gameState = 1;
-			gZone.innerHTML = "";
 		}
 		if (gameState == 1) {
 			for (let p of players) {
@@ -374,18 +385,21 @@ Change everything to the same thing for scaling
 				}
 			}
 			if (currTime > timeLimit) {
-				if (rando.checked) {
-					gZone.innerHTML = `<div style='position: absolute; margin-left: ${Math.random()*window.innerWidth};
-						margin-top: ${Math.random()*window.innerHeight-300};z-index: 1'>&#129712</div><br>`;
-				}
-				else gZone.innerHTML = "<br>&#129712<br><br>";
+				gZone.innerHTML = `<div style='position: fixed; bottom: ${(rando.checked) ? Math.random()*maxY : maxY*.75};
+					left: ${(rando.checked) ? Math.random()*maxX : maxX/2};z-index: 1'>&#129712</div>`;
 				if (currTime > timeLimit + 3000) {
 					gameState = 2;
-					gZone.innerHTML = displayPlayersTable("score");
+					gZone.innerHTML = "<br>Time is up!<br>";
+					for (let p of players) {if (p.score == 0) p.score = "Too Slow";}
+					gZone.innerHTML += displayPlayersTable("score");
 				}
 			}
 		}
 	}
+
+//========================================== Rework Scroll Skip ==========================================
+
+
 
 	function redLightGreenLight() {
 		if (gameState == 0) {
@@ -2252,7 +2266,10 @@ Change everything to the same thing for scaling
 			if (p.y < 0) p.y = 0;
 			if (p.y > maxY-p.h) p.y = maxY-p.h;
 			if (p.y > maxY-1.1*p.h && p.status == 0) {
-				p.colour = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+				if (cust.value == "Colour") p.colour = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+				else if (cust.value == "Emoji") p.emoji = "";
+				else if (cust.value == "Height") p.h = Math.floor(Math.random()*100)+1;
+				else if (cust.value == "Width") p.w = Math.floor(Math.random()*100)+1;
 				p.status = 1;
 			} else if (p.y < maxY-1.1*p.h) p.status = 0;
 			if (p.dx != 0) {
@@ -2267,18 +2284,28 @@ Change everything to the same thing for scaling
 	
 	function pong() {
 		if (gameState == 0) {
+			options.innerHTML = `
+				Ball: <input type=range id=bSp min=.05 max=.5 step=.05 value=.1>
+				Player: <input type=range id=pSp min=.01 max=.1 step=.01 value=.05>
+			`;
+			timeLimit = currTime + 5000;
+			gameState = 1;
+		}
+		if (gameState == 1) {
 			setPlayerAngles();
 			let radius = Math.min(maxX, maxY) / 2.5;
-			let limit = (360 / players.filter(p => p.status != "DEAD").length)*.5;
+			let aliveCount = players.filter(p => p.status != "DEAD").length;
+			let limit = (360 / aliveCount)*.5;
 			assets = [{
-				x: maxX/2 - 25, y: maxY/2 - 25, colour: "white", id: "ball",
-				w: 25, h: 25, angle: Math.random()*360, speed: fps*.1*(Math.random()+1)
+				x: maxX/2, y: maxY/2, colour: "white", id: "ball",
+				w: Math.min(25, 100/aliveCount), h: Math.min(25, 100/aliveCount), angle: Math.random()*360,
+				speed: fps*bSp.value, text: "↓"
 			}];
 			for (let p of players) {
 				if (p.status == "DEAD") continue;
 				p.x = maxX/2 + radius * Math.cos(p.angle*Math.PI/180);
 				p.y = maxY/2 + radius * Math.sin(p.angle*Math.PI/180);
-				p.w = 50;
+				p.w = Math.min(50, 250/aliveCount);
 				p.h = 10;
 				p.angle0 = p.angle;
 				assets.push({
@@ -2287,17 +2314,29 @@ Change everything to the same thing for scaling
 					colour: "white", w: 1, h: 50, angle: p.angle0-limit, id:"wall"+p.id
 				});
 			}
-			gameState = 1;
+			assets.push({});
+			gameState = 1.5;
 		}
-		if (gameState == 1) {
+		if (gameState == 1.5) {
+			assets[assets.length-1] = {
+				text: `Starting in ${(Math.ceil((timeLimit-currTime)/1000))}`,
+				x: 0, y: maxY*.75, w:maxX, h:0, id: "win", colour: "transparent"
+			};
+			if (currTime > timeLimit) {
+				gameState = 2;
+				assets.pop();
+				assets[0].text = "";
+			}
+		}
+		if (gameState == 2) {
 			let radius = Math.min(maxX, maxY) / 2.5;
 			let aliveCount = players.filter(p => p.status != "DEAD").length;
 			let limit = (360 / aliveCount)*.5;
 			for (let p of players) {
 				if (p.pressed != 0) {
 					if (p.status == "DEAD") continue;
-					if (p.status == 0) p.angle += fps*.05*(10/aliveCount);
-					else p.angle -= fps*.05*(10/aliveCount);
+					if (p.status == 0) p.angle += fps*pSp.value*(10/aliveCount);
+					else p.angle -= fps*pSp.value*(10/aliveCount);
 					if (p.angle > p.angle0 + limit) {
 						p.angle = p.angle0 + limit;
 						p.status = 1;
@@ -2314,10 +2353,10 @@ Change everything to the same thing for scaling
 				if (!p.collisionBuffer || p.collisionBuffer <= 0) {
 					if (distanceCollide(assets[0], p)) {
 						assets[0].angle = p.angle - 180 + (Math.random() * 30 - 15);
+						assets[0].speed = fps*bSp.value*(Math.random()+1);
 						while (assets[0].angle <= 0) assets[0].angle += 360;
 						while (assets[0].angle >= 360) assets[0].angle -= 360;
 						if (rando.checked) {
-							assets[0].speed = fps*.1*(Math.random()+1);
 							assets[0].w = Math.random()*40+10;
 							assets[0].h = Math.random()*40+10;
 						}
@@ -2334,23 +2373,31 @@ Change everything to the same thing for scaling
 				(assets[0].x + assets[0].w / 2 - maxX / 2) * (assets[0].x + assets[0].w / 2 - maxX / 2) +
 				(assets[0].y + assets[0].h / 2 - maxY / 2) * (assets[0].y + assets[0].h / 2 - maxY / 2)
 			);
-			if (distFromCenter > radius*1.2) {
+			let ballAngle = Math.atan2(
+				assets[0].y + assets[0].h / 2 - maxY / 2,
+				assets[0].x + assets[0].w / 2 - maxX / 2
+				) * 180 / Math.PI;
+			if (ballAngle < 0) ballAngle += 360;
+			if (distFromCenter > radius*1.5) {
 				for (let p of players) {
+					if (p.status == "DEAD") continue;
 					let pmin = p.angle0 - limit;
 					while (pmin < 0) pmin += 360;
 					let pmax = p.angle0 + limit;
 					while (pmax >= 360) pmax -= 360;
 					if (pmin < pmax) {
-						if (assets[0].angle >= pmin && assets[0].angle <= pmax) {
+						if (ballAngle >= pmin && ballAngle <= pmax) {
 							p.score++;
 							if (p.score > 0) p.status = "DEAD";
-							gameState = 0;
+							gameState = 1;
+							timeLimit = currTime + 3000;
 						}
 					} else {
-						if (assets[0].angle >= pmin || assets[0].angle <= pmax) {
+						if (ballAngle >= pmin || ballAngle <= pmax) {
 							p.score++;
 							if (p.score > 0) p.status = "DEAD";
-							gameState = 0;
+							gameState = 1;
+							timeLimit = currTime + 3000;
 						}
 					}
 				}
@@ -2359,10 +2406,84 @@ Change everything to the same thing for scaling
 					players[players.findIndex(p => p.id == winner.id)].status = "DEAD";
 					assets = [{
 						text: `Player ${winner.id} won!`,
-						x: 0, y: 0, w:maxX, h:maxY, id: "win", colour: "transparent"
+						x: 0, y: maxY/2, w:maxX, h:0, id: "win", colour: "transparent"
 					}];
-					gameState = 2;
+					gameState = 3;
 				}
+			}
+		}
+	}
+
+	function firstToAnswer() {
+		if (players.length < 2) {gamemode = "rollCredits"; return;}
+		if (gameState == 0) {
+			opts.style.display = "none";
+			for (let p of players) {
+				p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
+				p.y = maxY/3; p.w = Math.min(50,maxX/players.length/5); p.h = p.w;
+			}
+			temp = [];
+			gameState = 1;
+		}
+		if (gameState == 1) {
+			for (let p of players) {
+				if (p.pressed == currTime) {
+					temp.push(p.id);
+					p.y = maxY/2;
+				}
+			}
+			if (temp.length > 0) {
+				assets.push({
+					text: `Player ${temp[(rando.checked) ? Math.floor(Math.random()*temp.length) : 0]} was first!`,
+					x: 0, y: 0, w:maxX, h:maxY*.85, id: "win", colour: "transparent"
+				});
+				gameState = 2;
+			}
+		}
+	}
+
+	function fastestClicker() {
+		if (gameState == 0) {
+			timeLimit = currTime + 3000;
+			assets[0] = {
+				text: `Starting in ${(Math.ceil((timeLimit-currTime)/1000))}`,
+				x: 0, y: maxY*.75, w:maxX, h:0, id: "win", colour: "transparent"
+			};
+			for (let p of players) {
+				p.score = 0;
+				p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
+				p.y = 0; p.w = Math.min(50,maxX/players.length/5); p.h = p.w;
+			}
+			opts.style.display = "none";
+			gameState = 1;
+		}
+		if (gameState == 1) {
+			assets[0].text = `Starting in ${(Math.ceil((timeLimit-currTime)/1000))}`;
+			if (currTime >= timeLimit) {
+				gameState = 2;
+				assets[0].text = "SPAM YOUR BUTTON!";
+				timeLimit = currTime + 15000;
+			}
+		}
+		if (gameState == 2) {
+			if (currTime <= timeLimit) {
+				assets[0].text = `${(Math.ceil((timeLimit-currTime)/1000))}`;
+				for (let p of players) {
+					if (p.pressed == currTime) {
+						if (rando.checked) (Math.random() < .5) ? p.score-- : p.score++;
+						else p.score++;
+						p.y = p.score / 200 * maxY;
+					}
+				}
+			}
+			else {
+				gameState = 3;
+				let winner = minMaxScore()[1];
+				let highScore = players[players.findIndex(P => P.id === winner[0])].score;
+				assets[0].text = `Time is Up<br> Player${winner.length == 1 ? "" : "s"} ${winner.join(", ")} won with
+					${highScore} clicks!`;
+				assets[0].y = maxY;
+				for (let p of players) {p.y = p.score / highScore * maxY * .75;}
 			}
 		}
 	}
@@ -2412,29 +2533,31 @@ Change everything to the same thing for scaling
 		gainNode.gain.linearRampToValueAtTime(gain, now + attack / 1000);
 		gainNode.gain.setValueAtTime(gain, now + attack / 1000 + duration / 1000);
 		gainNode.gain.linearRampToValueAtTime(0, now + attack / 1000 + duration / 1000 + release / 1000);
-		if (panNode) {
-			osc.connect(gainNode).connect(panNode).connect(ctx.destination);
-		} else {
-			osc.connect(gainNode).connect(ctx.destination);
-		}
+		if (panNode) osc.connect(gainNode).connect(panNode).connect(ctx.destination);
+		else osc.connect(gainNode).connect(ctx.destination);
 		osc.start(now);
 		osc.stop(now + (attack + duration + release) / 1000);
 		osc.onended = () => ctx.close();
 	}
 
 	function minMaxScore() {
-		let result = [0,0];
-		for (let i in players) {
-			if (!isNaN(players[i].score)) {
-				result = [i,i];
-				break;
+		let minScore = Infinity, maxScore = -Infinity;
+		let minPlayers = [], maxPlayers = [];
+		for (let p of players) {
+			if (p.score < minScore) {
+				minScore = p.score;
+				minPlayers = [p.id];
+			} else if (p.score === minScore) {
+				minPlayers.push(p.id);
+			}
+			if (p.score > maxScore) {
+				maxScore = p.score;
+				maxPlayers = [p.id];
+			} else if (p.score === maxScore) {
+				maxPlayers.push(p.id);
 			}
 		}
-		for (let i in players) {
-			if (players[i].score < players[result[0]].score) result[0] = i;
-			if (players[i].score >= players[result[1]].score) result[1] = i;
-		}
-		return result;
+		return [minPlayers, maxPlayers];
 	}
 
 	function displayPlayersTable(propertyName) {
@@ -2529,13 +2652,13 @@ Change everything to the same thing for scaling
 					ctx.rotate((-90-p.angle) * Math.PI / 180);
 					ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
 					ctx.fillStyle = "rgb(200,200,200)";
-					ctx.font = "5rem Georgia";
+					ctx.font = "5rem Times New Roman";
 					let text = ctx.measureText(p.id);
 					ctx.fillText(p.id, -p.w / 2 + (p.w-text.width)/2, text.actualBoundingBoxAscent+p.h);
 				} else {
 					ctx.fillRect(p.x, canvas.height*(1-p.y/maxY)-p.h, p.w, p.h);
 					ctx.fillStyle = "rgb(200,200,200)";
-					ctx.font = "5rem Georgia";
+					ctx.font = "5rem Times New Roman";
 					let text = ctx.measureText(p.id);
 					ctx.fillText(p.id, p.x+(p.w-text.width)/2, canvas.height*(1-p.y/maxY)-p.h/2+text.actualBoundingBoxAscent/2);
 				}
@@ -2550,18 +2673,18 @@ Change everything to the same thing for scaling
 					ctx.fillRect(-a.w / 2, -a.h / 2, a.w, a.h);
 					if (a.text != null) {
 						ctx.fillStyle = "rgb(200,200,200)";
-						ctx.font = "5rem Georgia";
+						ctx.font = "5rem Times New Roman";
 						let text = ctx.measureText(a.text);
-						ctx.fillText(a.text, a.x+(a.w-text.width)/2, canvas.height*(1-a.y/maxY)-a.h/2+text.actualBoundingBoxAscent/2);
+						ctx.fillText(a.text, -a.w / 2 + (a.w-text.width)/2, text.actualBoundingBoxAscent+a.h);
 					}
 				}
 				else {
 					ctx.fillRect(a.x, canvas.height * (1 - a.y / maxY) - a.h, a.w, a.h);
 					if (a.text != null) {
 						ctx.fillStyle = "rgb(200,200,200)";
-						ctx.font = "5rem Georgia";
+						ctx.font = "5rem Times New Roman";
 						let text = ctx.measureText(a.text);
-						ctx.fillText(a.text, a.x+(a.w-text.width)/2, text.actualBoundingBoxAscent);
+						ctx.fillText(a.text, a.x+(a.w-text.width)/2, canvas.height*(1-a.y/maxY)-a.h+text.actualBoundingBoxAscent);
 					}
 				}
 				ctx.restore();
@@ -2575,6 +2698,11 @@ Change everything to the same thing for scaling
 			}
 			gZone.firstChild.style.width = maxX + "px";
 			gZone.firstChild.style.height = maxY + "px";
+			let playerIds = players.map(p => `p${p.id}`);
+			let existingPlayerDivs = Array.from(gZone.firstChild.querySelectorAll('[id^="p"]'));
+			for (let div of existingPlayerDivs) {
+				if (!playerIds.includes(div.id)) div.remove();
+			}
 			for (let [i,p] of players.entries()) {
 				let playerDiv = document.getElementById(`p${p.id}`);
 				if (!playerDiv) {
@@ -2608,6 +2736,7 @@ Change everything to the same thing for scaling
 				assetDiv.style.width = a.w + "px";
 				assetDiv.style.height = a.h + "px";
 				assetDiv.style.transform = `rotate(${(a.angle != null) ? (-90-a.angle) : 0}deg)`;
+				assetDiv.innerHTML = (a.text) ? a.text : '';
 			}
 		}
 		else {return "No players data available.";}
