@@ -374,10 +374,12 @@ Try to remove the subzone
 			temp = [-500];
 			if (!options.innerHTML.includes("Freq")) {
 				options.innerHTML = `
-				Frequency: <input type=range id=fq value=300 min=0 max=5000>
-				<br> Max Gap: <input type=range id=gp value=300 min=50 max=1000>
+				Frequency: <input type=range id=fq value=1000 min=100 max=3000 step=100>
+				<br> Max Gap: <input type=range id=gp value=300 min=10 max=1000>
+				<br> Difficulty: <input type=range id=dif value=1 min=1 max=5>
 				`;
 			}
+			timeLimit = currTime + 1000;
 			for (let p of players) {p.x = maxX*.1;p.y = maxY/2; p.w = 50; p.h = p.w;}
 		}
 		if (gameState == 1) {
@@ -389,20 +391,16 @@ Try to remove the subzone
 				temp[i].x -= temp2;
 				if (temp[i].x > -temp[i].w) assets.push(temp[i]);
 			}
-			if (rando.checked) {
+			if (rando.checked && Math.random() < fps*fq.value/10000) {
 				temp.push({x: maxX, y: Math.random()*maxY, w: 50, h: 50, colour:"magenta", id:`wall${temp.length}`});
-				temp.at(-1).x += temp.at(-1).w
 				assets.push(temp.at(-1));
-			} else {
-				if (temp[0] % fq.value == 0) {
-					let gap = Math.random() * gp.value + 50;
-					temp.push({x: maxX, y: 0, w: 50, h: gap, colour:"magenta", id:`wall${temp.length}`});
-					temp.at(-1).x += temp.at(-1).w;
-					assets.push(temp.at(-1));
-					temp.push({x: maxX, y: temp.at(-1).h + gap, w: 50, h: maxY - temp.at(-1).h - gap, colour:"magenta", id:`wall${temp.length}`});
-					temp.at(-1).x += temp.at(-1).w;
-					assets.push(temp.at(-1));
-				}
+			} else if (!rando.checked && currTime > timeLimit) {
+				timeLimit += parseInt(fq.value);
+				let gap = Math.max(100, gp.value - (dif.value * Math.abs(temp[0]) * 0.01));
+				temp.push({x: maxX, y: 0, w: 50, h: Math.max(0, Math.random()*maxY-gap), colour:"magenta", id:`wall${temp.length}`});
+				assets.push(temp.at(-1));
+				temp.push({x: maxX, y: temp.at(-1).h + gap, w: 50, h: maxY - temp.at(-1).h - gap, colour:"magenta", id:`wall${temp.length}`});
+				assets.push(temp.at(-1));
 			}
 			gameState = 2;
 			for (let p of players) {
