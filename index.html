@@ -125,7 +125,7 @@ Use "npm i -g http-server" and "http-server" for codespace port
 		<div id=header class=head>Select A Game</div><br>
 		<div id=main>
 			<select id=game class=drop>
-
+				<option>Kitten Canon</option>
 				<option>First to Answer</option>
 				<option>Fastest Clicker</option>
 				<option>Reaction Test</option>
@@ -147,7 +147,6 @@ Use "npm i -g http-server" and "http-server" for codespace port
 				<option>The Giver</option>
 				<option>PEMDAS</option>
 				<option>Hill Climb Racing</option>
-				<option>Kitten Canon</option>
 				<option>Langton Snake</option>
 				<option>Simon Says</option>
 				<option>TP Unroll</option>
@@ -232,6 +231,15 @@ Try to remove the subzone
 		timeLimit = 0;
 		startTime = Date.now();
 		gZone._cssInitialized = false;
+		if (displayType === "Canvas" && canvas) {
+			canvas.onwheel = null;
+			canvas.onmousedown = null;
+			canvas.onmouseup = null;
+			canvas.onmousemove = null;
+			canvas.style.cursor = "";
+			window.onresize = null;
+			canvas = null;
+		}
 		pause = false;
 	}
 
@@ -357,10 +365,7 @@ Try to remove the subzone
 		//eliminating the player (base) will eliminate the player
 	}
 
-	// assets = [{
-	// 	text: `Player ${winner.id} won!`,
-	// 	x: 0, y: maxY/2, w:maxX, h:0, id: "win", colour: "transparent"
-	// }];
+	// assets = [{ text:``, x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
 	// opts.style.display = "none";
 	// for (let p of players) {
 	// 	p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
@@ -368,7 +373,125 @@ Try to remove the subzone
 	// }
 
 
-
+	function kittenCanon() {
+		if (gameState == 0) {
+			gameState = 1;
+			timeLimit = currTime + 3000;
+			temp = []; //fill with bombs and spikes
+			for (let p of players) {
+				p.score = [maxX*.1,maxX*.1]; //angle and power then Vx and Vy
+				p.x = maxX*.1;
+				p.y = maxY*.9 - (maxY*.8 / (players.length+1) * (players.indexOf(p)+1));
+				p.h = Math.min(33,maxY*.8/players.length/2);
+				p.w = p.h;
+			}
+		}
+		if (gameState == 1) {
+			assets = [{ text:`Set your angle: ${Math.ceil((timeLimit - currTime)/1000)}`,
+				x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
+			assets.push({x: maxX*.1, y: maxY*.1, w: maxX*.8, h: maxY*.8, id: "box", colour: "gray"});
+			assets.push({text: "0 deg", x: 0, y: maxY*.05, w: maxX*.2, h: maxY*.05, id: "min", colour: "transparent"});
+			assets.push({text: "90 deg", x: maxX*.8, y: maxY*.05, w: maxX*.2, h: maxY*.05, id: "max", colour: "transparent"});
+			for (let p of players) {
+				if (p.pressed != 0) p.score[0] += fps/(maxX*.0008);
+				if (p.score[0] > maxX*.9-p.w) p.score[0] = maxX*.1;
+				p.x = p.score[0];
+			}
+			if (currTime > timeLimit) {
+				gameState = 2;
+				timeLimit = currTime + 3000;
+			}
+		}
+		if (gameState == 2) {
+			assets[0].text = `Set your power: ${Math.ceil((timeLimit - currTime)/1000)}`;
+			assets[2].text = "0 px/s";
+			assets[3].text = "100 px/s";
+			for (let p of players) {
+				if (p.pressed == currTime) p.score[1] += fps/.35;
+				else p.score[1] -= fps/4;
+				if (p.score[1] < maxX*.1) p.score[1] = maxX*.1;
+				else if (p.score[1] > maxX*.9-p.w) p.score[1] = maxX*.9-p.w;
+				p.x = p.score[1];
+			}
+			if (currTime > timeLimit) {
+				gameState = 3;
+				for (let p of players) {
+					p.score[0] = ((p.score[0]-(maxX*.1))/(maxX*.8)*90) * Math.PI/180;
+					p.score[1] = (p.score[1]-(maxX*.1))/(maxX*.8)*100;
+					let temp2 = [0,0];
+					temp2[0] = Math.cos(p.score[0])*p.score[1];
+					temp2[1] = Math.sin(p.score[0])*p.score[1];
+					p.score = [...temp2,1,1];
+				}
+			}
+		}
+		if (gameState == 3) {
+			gameState = 4;
+			let maxPX = Math.max(...players.map(p => p.score[2] + p.w + maxX*.75));
+			let minX = Math.min(...players.map(p => p.score[2]-maxX*.1));
+			if (Math.random() > .95) {
+				let type = (Math.random() < .5) ? "bomb" : "spike";
+				if (rando.checked) temp.push({type: type, x: maxPX + maxX*.25, y: maxY*Math.random(), w: 50, h: 50});
+				else temp.push({type: type, x: maxPX + maxX*.25, y: 0, w: 50, h: 50});
+				temp.at(-1).colour = (temp.at(-1).type == "spike") ? "magenta" : "red";
+				temp.at(-1).id = temp.length;
+			}
+			assets = [{text: Math.round(maxPX/10), x: 0, y: maxY, w:maxX, h:0, id: "score", colour: "transparent"}];
+			for (let t of temp) {
+				let copy = { ...t };
+				assets.push(copy);
+				assets[assets.length-1].x -= minX;
+			}
+			for (let p of players) {
+				if (p.status < 0) continue;
+				if (p.score[0] >= 0.1) {
+					gameState = 3;
+					p.score[2] += p.score[0];
+					p.score[3] += p.score[1];
+					if (p.score[3] < 0) {
+						p.score[3] = 0;
+						p.score[0] *= .9;
+						p.score[1] *= -.85;
+					}
+					p.score[0] *= .999;
+					p.score[1] -= 1;
+					if (p.score[0] < .1) p.score[0] = 0;
+				}
+				else p.status = -1;
+				p.x = p.score[2] - minX;
+				p.y = p.score[3];
+				for (let a of assets) {
+					if (a.x + a.w < p.x || a.x > p.x + p.w || a.id == "score") continue;
+					if (simpleCollide(p,a)) {
+						if (a.type == "spike") p.status = -1;
+						else {
+							p.score[0] += 10;
+							if (p.score[1] < 1) p.score[1] *= -1;
+							p.score[1] += 50;
+						}
+					}
+				}
+			}
+		}
+		if (gameState == 4) {
+			gameState = 5;
+			assets = [];
+			for (let p of players) {
+				p.status = "DEAD";
+				p.x = p.score[2];
+				p.y = p.score[3];
+			}
+			let maxPX = Math.max(...players.map(p => p.x));
+			for (let t of temp) {
+				if (t.x == null || t.x > maxX*.8 + maxPX) continue;
+				if (t.x + t.w > maxX + maxPX) t.w = maxX - t.x;
+				assets.push(t);
+			}
+			maxPX = Math.max(...players.map(p => p.x + p.w + maxX*.75));
+			assets.push({text: Math.round(maxPX/10), x: Math.max(...players.map(p => p.x))-maxX*.1, y: maxY, w:maxX, h:0, id: "score", colour: "transparent"});
+			endDisplay();
+		}
+	}
 
 //========================================== Rework Scroll Skip ==========================================
 	function reactionTest() {
@@ -662,91 +785,6 @@ Try to remove the subzone
 				gZone.style.position = "";
 				gZone.style.marginLeft = "";
 			}
-		}
-	}
-
-	function platformer() {
-		if (gameState == 0) {
-			gameState = 1;
-			document.body.style.overflowY = "hidden";
-			gZone.style.height = "65%";
-			gZone.style.width = window.innerWidth;
-			gZone.style.borderBottom = "solid";
-			gZone.style.borderTop = "solid";
-			gZone.style.position = "relative";
-			topStuff.style.whiteSpace = "nowrap";
-			topStuff.style.textAlign = "right";
-			sZone.style.position = "fixed";
-			for (let p of players) {p.jumped = false;}
-			temp = [["spike",Math.round(parseFloat(gZone.offsetWidth)-50),0,25,25]];
-		}
-		if (gameState == 1) {
-			let temp2 = Math.ceil(fps/3), game = "";
-			gZone.style.width = parseFloat(gZone.offsetWidth)+(temp2);
-			topStuff.style.width = parseInt(gZone.offsetWidth-50);
-			sZone.innerHTML = Math.round(parseInt(gZone.offsetWidth) - 1.5*window.innerWidth);
-			gameState = 2;
-			playerLoop:
-			for (let p of players) {
-				if (p.status >= 0) {
-					game += `<div class=alive style='bottom:${p.status}%; background-color: ${p.colour}; `;
-					if (p.pressed >= currTime-150 && (p.jumped >= currTime-150 || !p.jumped)) {
-						p.status +=  temp2/4;
-						p.jumped = p.pressed;
-					}
-					else p.status -=  temp2/6;
-					if (p.status < 0) {
-						p.status = 0.01;
-						p.jumped = false;
-					}
-					p.score += temp2;
-					gameState = 1;
-					let obj1 = {"x1":p.score+100,"x2":p.score+125,"y1":p.status,
-						"y2":p.status+25/gZone.offsetHeight*100}
-					for (let j in temp) {
-						let obj2 = {"x1":temp[j][1],"x2":parseFloat(temp[j][1])+parseFloat(temp[j][3]),
-							"y1":temp[j][2],"y2":temp[j][2]+temp[j][4]/gZone.offsetHeight*100}
-						if (simpleCollide(obj1,obj2)) {
-							if (temp[j][0] == "floor" && p.pressed < currTime-150) {
-								p.status = temp[j][2];
-								p.jumped = false;
-							}
-							else if (temp[j][0] == "spike") p.status *= -1;
-						}
-					}
-				} else {
-					game += `<div class=dead style='bottom:${-1*p.status}%; `;
-				}
-				game += `left:${p.score+100}; position:absolute;'>${p.id}</div>`;
-			}
-			if (rando.checked) {
-				if (Math.random() < .5*(fps/100)) {
-					if (Math.random() < .85) temp.push(["spike",Math.round(parseFloat(gZone.offsetWidth)-10),Math.round(Math.random()*91),25,25]);
-					if (Math.random() < .15) temp.push(["spike",Math.round(parseFloat(gZone.offsetWidth)-10),0,25,25]);
-					if (Math.random() < .65) temp.push(["floor",Math.round(parseFloat(gZone.offsetWidth)-10),Math.round(Math.random()*91),250,3]);
-				}
-			} else {
-				if (Math.floor(gZone.offsetWidth / 250)>  Math.floor((gZone.offsetWidth - temp2) / 250)) {
-					temp.push(["floor",Math.round(parseFloat(gZone.offsetWidth)-10),25,Math.random()*500,3]);
-					temp.push(["floor",Math.round(parseFloat(gZone.offsetWidth)-10),50,Math.random()*500,3]);
-					temp.push(["floor",Math.round(parseFloat(gZone.offsetWidth)-10),75,Math.random()*500,3]);
-				}
-				let temp3 = [12.5,37.5,62.5];
-				if (Math.random() < .25*(fps/100)) temp.push(["floor",Math.round(parseFloat(gZone.offsetWidth)-50),temp3[Math.floor(Math.random()*3)],50,3]);
-				temp3 = [0,12.5,25,37.5,50,62.5,75,90.5];
-				if (Math.random() < Math.pow(parseInt(sZone.innerHTML),.25)/(2000/fps)) {
-					temp.push(["spike",Math.round(parseFloat(gZone.offsetWidth)-50),temp3[Math.floor(Math.random()*8)],25,25]);
-				}
-			}
-			for (let i in temp) {
-				if (temp[i][1] < gZone.offsetWidth-window.innerWidth-500 && gameState == 1 && gameState == 1) continue;
-				game += `<div style='position:absolute; left:${temp[i][1]}; bottom:${temp[i][2]}%; background-color:`;
-				if (temp[i][0] == "spike") game += `gray; z-index-2; `;
-				else game += `fuchsia; `;
-				game += `width:${temp[i][3]}; height:${temp[i][4]};'>&nbsp</div>`
-			}
-			gZone.innerHTML = game;
-			window.scroll(1000000,0);
 		}
 	}
 
@@ -1143,126 +1181,6 @@ Try to remove the subzone
 			sZone.innerHTML = displayPlayersTable("score");
 			let temp2 = minMaxScore();
 			gZone.innerHTML = `Player ${temp2[1]} scored the highest... NERD!<br><br>`;
-		}
-	}
-
-	function kittenCanon() {
-		if (gameState == 0) {
-			gameState = 1;
-			timeLimit = currTime + 3000;
-			temp = []; //fill with bombs and spikes
-			for (let p of players) {
-				p.status = [0,0]; //angle and power then Vx and Vy
-				p.x1 = 0;
-				p.x2 = 0;
-				p.y1 = 0.1;
-				p.y2 = 0;
-			}
-			gZone.style.position = "relative";
-			gZone.style.height = "";
-			gZone.style.width = "100%";
-			gZone.style.top = "30%";
-			gZone.style.border = "";
-			topStuff.style.position = "fixed";
-			topStuff.style.justifySelf = "anchor-center";
-			sZone.style.position = "relative";
-			sZone.style.top = "30%";
-		}
-		if (gameState == 1) {
-			gZone.innerHTML = "Set your angle";
-			let game = "<div style='position: relative; width: 90%; height: 25; z-index: -1; background:var(--fc); justify-self: center'>";
-			for (let p of players) {
-				if (p.pressed != 0) p.status[0] += fps/16;
-				if (p.status[0] > 90) p.status[0] = 0;
-				game += `<div class=alive style='background:${p.colour}; position: absolute;
-					left:${p.status[0]/90*100}%; z-index:1'>${p.id}</div>`;
-			}
-			game += "</div>";
-			sZone.innerHTML = game;
-			if (currTime > timeLimit) {
-				gameState = 2;
-				timeLimit = currTime + 3000;
-			}
-		}
-		if (gameState == 2) {
-			gZone.innerHTML = "Spam for power";
-			let game = "<div style='position: relative; width: 90%; height: 25; z-index: -1; background:var(--fc); justify-self: center'>";
-			for (let p of players) {
-				if (p.pressed == currTime) p.status[1] += 64/fps;
-				else p.status[1] -= 2/fps;
-				if (p.status[1] < 0) p.status[1] = 0;
-				game += `<div class=alive style='background:${p.colour}; position: absolute;
-					left:${p.status[1]}%; z-index:1'>${p.id}</div>`;
-			}
-			game += "</div>";
-			sZone.innerHTML = game;
-			if (currTime > timeLimit) {
-				gameState = 3;
-				for (let p of players) {
-					p.status[0] *= Math.PI/180;
-					let temp2 = [0,0];
-					temp2[0] = Math.cos(p.status[0])*p.status[1];
-					temp2[1] = Math.sin(p.status[0])*p.status[1];
-					p.status = [...temp2];
-				}
-				gZone.style.position = "relative";
-				gZone.style.height = "60%";
-				gZone.style.border = "solid";
-				sZone.style.position = "fixed";
-				sZone.style.justifySelf = "center";
-			}
-		}
-		if (gameState == 3) {
-			gameState = 4;
-			let game = "";
-			for (let p of players) {
-				if (p.status[0] > 0) {
-					gameState = 3;
-					p.x1 += p.status[0];
-					p.x2 = p.x1 + 25;
-					p.y1 += p.status[1];
-					p.y2 = p.y1 + 25;
-					if (p.y1 < 0) {
-						p.y1 = 0;
-						p.status[0] *= .9;
-						p.status[1] *= -.85;
-					}
-					p.status[0] *= .999;
-					p.status[1] -= 1;
-					if (p.status[0] < .1) p.status[0] = 0;
-				}
-				game += `<div class=alive style='background: ${p.colour}; position: absolute;
-					left: ${p.x1}; bottom: ${p.y1}; z-index:1'>${p.id}</div>`;
-				for (let j in temp) {
-					if (temp[j].x2 < p.x1 || temp[j].x1 > p.x2) continue;
-					if (simpleCollide(p,temp[j])) {
-						if (temp[j].type < 0.5) {
-							p.status[0] = 0;
-							p.status[1] = 0;
-						}
-						else {
-							p.status[0] += 10;
-							if (p.status[1] < 1) p.status[1] *= -1;
-							p.status[1] += 50;
-						}
-					}
-				}
-			}
-			
-			if (Math.random() > .95) {
-				if (!rando.checked) temp.push({type: Math.random(), x1: parseInt(gZone.style.width), y1: 0});
-				else temp.push({type: Math.random(), x1: parseInt(gZone.style.width), y1: gZone.offsetHeight*Math.random()});
-				temp.at(-1).x2 = temp.at(-1).x1 + 50;
-				temp.at(-1).y2 = temp.at(-1).y1 + 50;
-			}
-			for (let i in temp) {
-				game += `<div class=brick style='background: ${(temp[i].type < .5) ? "gray" : "fuchsia"}; position: absolute;
-					left: ${temp[i].x1}; bottom: ${temp[i].y1}'></div>`;
-			}
-			gZone.innerHTML = game;
-			gZone.style.width = players[0].x1+1000+"px";
-			sZone.innerHTML = Math.round((parseFloat(gZone.style.width))/10);
-			window.scrollTo(1000000000000,0);
 		}
 	}
 
@@ -2335,35 +2253,34 @@ Try to remove the subzone
 	function flappyBird() {
 		if (gameState == 0) {
 			gameState = 1;
-			temp = [-500];
+			temp = [-Math.round(maxX)];
 			if (!options.innerHTML.includes("Freq")) {
 				options.innerHTML = `
 				Frequency: <input type=range id=fq value=1000 min=100 max=3000 step=100>
 				<br> Max Gap: <input type=range id=gp value=300 min=10 max=1000>
-				<br> Difficulty: <input type=range id=dif value=1 min=1 max=5>`;
+				<br> Difficulty: <input type=range id=dif value=1 min=1 max=5>
+				<br> Player Size: <input type=range id=psz value=33 min=10 max=100 step=1>`;
 			}
 			timeLimit = currTime + 1000;
-			for (let p of players) {p.x = maxX*.1;p.y = maxY/2; p.w = 50; p.h = p.w;}
+			for (let p of players) {p.x = maxX*.1;p.y = maxY/2; p.w = 1*psz.value; p.h = p.w;}
 		}
 		if (gameState == 1) {
 			let temp2 = Math.ceil(fps/5);
 			temp[0] += temp2;
 			assets = [{text: temp[0], x: 0, y: maxY, w:150, h:0, id: "score", colour: "transparent"}];
-			for (let i in temp) {
-				if (i == 0) continue;
-				temp[i].x -= temp2;
-				if (temp[i].x > -temp[i].w) assets.push(temp[i]);
+			for (let t of temp) {
+				if (t.x == null) continue;
+				t.x -= temp2;
+				if (t.x > -t.w) assets.push(t);
 			}
-			if (rando.checked && Math.random() < fps*fq.value/500000) {
-				temp.push({x: maxX, y: Math.random()*maxY, w: 50, h: 50, colour:"magenta", id:`wall${temp.length}`, x0: temp[0]});
-				assets.push(temp.at(-1));
-			} else if (!rando.checked && currTime > timeLimit) {
+			if (rando.checked && Math.random() < fps*fq.value/300000) {
+				temp.push({x: maxX, y: Math.random()*(maxY-50), w: 50, h: 50, colour:"magenta", id:`wall${temp.length}`, x0: temp[0]});
+			} 
+			else if (!rando.checked && currTime > timeLimit) {
 				timeLimit += parseInt(fq.value);
 				let gap = Math.max(100, gp.value - (dif.value * Math.abs(temp[0]) * 0.01));
 				temp.push({x: maxX, y: 0, w: 50, h: Math.max(0, Math.random()*maxY-gap), colour:"magenta", id:`wall${temp.length}`, x0: temp[0]});
-				assets.push(temp.at(-1));
 				temp.push({x: maxX, y: temp.at(-1).h + gap, w: 50, h: maxY - temp.at(-1).h - gap, colour:"magenta", id:`wall${temp.length}`, x0: temp[0]});
-				assets.push(temp.at(-1));
 			}
 			gameState = 2;
 			for (let p of players) {
@@ -2377,20 +2294,26 @@ Try to remove the subzone
 					p.score += temp2;
 					gameState = 1;
 					for (let a of assets) {
-						if (a.id == "score" || a.x > maxX*.25) continue;
+						if (a.id == "score") continue;
 						if (simpleCollide(p,a)) p.status = -1;
 					}
 				}
 				else {
 					p.x -= temp2;
-					if (p.x < 0) p.status = "DEAD"
+					if (p.x < 0) p.status = "DEAD";
 				}
 			}
 		}
 		if (gameState == 2) {
 			gameState = 3;
-			for (let i = 1; i < temp.length; i++) {assets.push(temp[i]);}
+			assets = [];
+			for (let t of temp) {
+				if (t.x == null) continue;
+				if (t.x + t.w > maxX) t.w = maxX - t.x;
+				assets.push(t);
+			}
 			for (let p of players) {p.status = "DEAD";}
+			assets.push({text: temp[0], x: 0, y: maxY, w:150, h:0, id: "score", colour: "transparent"});
 			endDisplay();
 		}
 	}
@@ -2401,12 +2324,13 @@ Try to remove the subzone
 			if (!options.innerHTML.includes("Cars")) {
 				options.innerHTML = `Cars: <input type=number id=cr value=20 min=1 max=50>
 					<br> Car Speed: <input type=range id=csp value=.5 min=.1 max=1 step=.1>
-					<br> Player Speed: <input type=range id=psp value=.5 min=.1 max=1 step=.1>`;
+					<br> Player Speed: <input type=range id=psp value=.5 min=.1 max=1 step=.1>
+					<br> Player Size: <input type=range id=psz value=33 min=10 max=100 step=1>`;
 			}
 			temp = [];
 			for (let p of players) {
 				p.x = maxX / (players.length+1) * (players.indexOf(p)+1),
-				p.y = maxY*.1; p.w = Math.min(50,maxX/players.length/5); p.h = p.w;
+				p.y = maxY*.1; p.w = Math.min(1*psz.value,maxX/players.length/5); p.h = p.w;
 			}
 		}
 		if (gameState == 1) {
@@ -2416,7 +2340,7 @@ Try to remove the subzone
 			if (Math.random() < .1*fps && temp.length < cr.value) {
 				let temp3 = Math.random();
 				temp.push({
-					x: (temp3 > .5)	? -50 : maxX, y: Math.random()*maxY+maxY*.25,
+					x: (temp3 > .5)	? -50 : maxX, y: Math.min(Math.random()*maxY+maxY*.25,maxY-50),
 					w: 50, h: 50, speed: fps*csp.value*(temp3-.5),
 					emoji: temp2[Math.floor(Math.random()*temp2.length)]
 				});
@@ -2448,6 +2372,106 @@ Try to remove the subzone
 					}
 				}
 			}
+		}
+		if (gameState == 2) {
+			gameState = 3;
+			let winner = minMaxScore()[1];
+			let highScore = Math.round(players[players.findIndex(P => P.id === winner[0])].score);
+			assets = [{x: maxX/4, y: maxY/4, w:maxX/2, h:maxY/2, id: "win"}];
+			assets[0].text = `Player${winner.length == 1 ? "" : "s"} ${winner.join(", ")} jaywalked ${highScore} time${highScore === 1 ? "" : "s"}!`;
+		}
+	}
+
+	function platformer() {
+		if (gameState == 0) {
+			gameState = 1;
+			if (!options.innerHTML.includes("Frequency")) {
+				options.innerHTML = `Spike Frequency: <input type=range id=fq value=1.3 min=1 max=3 step=.1>
+					<br>Floor Frequency: <input type=range id=ff value=0.5 min=.05 max=1 step=.05>
+					<br>Player Size: <input type=range id=psz value=33 min=10 max=100>
+					<br>Max Jump: <input type=range id=mj value=150 min=10 max=500 step=10>
+					<br>Jump Speed: <input type=range id=js value=1.75 min=.25 max=3 step=.25>
+					<br>Fall Speed: <input type=range id=fs value=1.25 min=.25 max=3 step=.25>`;
+			}
+			for (let p of players) {
+				p.jumped = false;
+				p.status = 1;
+				p.x = maxX*.1; p.y = 0; p.w = 1*psz.value; p.h = p.w;
+			}
+			temp = [-Math.round(maxX),{type:"spike", x:maxX, y:0, w:5, h:15, id:"spike", colour:"magenta"}];
+		}
+		if (gameState == 1) {
+			let temp2 = Math.ceil(fps/2.5);
+			temp[0] += temp2;
+			assets = [{text: temp[0], x: 0, y: maxY, w:150, h:0, id: "score", colour: "transparent"}];
+			if (rando.checked) {
+				if (Math.random() < fps*fq.value/100) {
+					if (Math.random() < .25*fq.value && temp[0] > -maxX/2) {
+						temp.push({type:"spike", x:maxX, y:Math.random()*(maxY*.9-25)+maxY*.1, w:25, h:25, colour:"magenta"});
+					}
+					if (Math.random() < .05*fq.value && temp[0] > -maxX/2) temp.push({type:"spike", x:maxX, y:0, w:25, h:25, colour:"magenta"});
+					if (Math.random() < 1*ff.value) temp.push({type:"floor", x:maxX, y:Math.random()*maxY, w:Math.random()*100+50, h:3, colour:"gray"});
+				}
+			} else {
+				if (Math.random() < ff.value/fps) {
+					temp.push({type:"floor", x:maxX, y:.25*maxY, w:Math.random()*500+100, h:3, colour:"gray"});
+					temp.push({type:"floor", x:maxX, y:.5*maxY, w:Math.random()*500+100, h:3, colour:"gray"});
+					temp.push({type:"floor", x:maxX, y:.75*maxY, w:Math.random()*500+100, h:3, colour:"gray"});
+				}
+				let temp3 = [0, 0,.125,.25,.375,.50,.625,.75,.905];
+				if (Math.random() < fq.value / fps && temp[0] > -maxX/2) {
+					temp.push({type: "spike", x: maxX, y: temp3[Math.round(Math.random()*(temp3.length-1))]*maxY, w: 25, h: 25, colour: "magenta"});
+				}
+			}
+			let temp3 = [];
+			for (let t of temp) {
+				if (t.x == null) continue;
+				t.x -= temp2;
+				t.id = temp.indexOf(t);
+				if (t.x > -t.w) t.type == "floor" ? assets.push(t) : temp3.push(t);
+			}
+			assets = [...assets,...temp3];
+			gameState = 2;
+			for (let p of players) {
+				if (p.status >= 0) {
+					gameState = 1;
+					if (p.pressed >= currTime-mj.value && (p.jumped >= currTime-mj.value || !p.jumped)) {
+						p.y +=  temp2*js.value;
+						p.jumped = p.pressed;
+					}
+					else p.y -=  temp2*fs.value;
+					if (p.y < 0) {
+						p.y = 0;
+						p.jumped = false;
+					}
+					p.score += temp2;
+					for (let a of assets) {
+						if (simpleCollide(p,a)) {
+							if (a.type == "floor" && p.pressed < currTime-150) {
+								p.y = a.y+a.h;
+								p.jumped = false;
+							}
+							else if (a.type == "spike") p.status *= -1;
+						}
+					}
+				} 
+				else{
+					p.x -= temp2;
+					if (p.x < 0) p.status = "DEAD";
+				}
+			}
+		}
+		if (gameState == 2) {
+			gameState = 3;
+			assets = [];
+			for (let t of temp) {
+				if (t.x == null) continue;
+				if (t.x + t.w > maxX) t.w = maxX - t.x;
+				assets.push(t);
+			}
+			for (let p of players) {p.status = "DEAD";}
+			assets.push({text: temp[0], x: 0, y: maxY, w:150, h:0, id: "score", colour: "transparent"});
+			endDisplay();
 		}
 	}
 
@@ -2601,8 +2625,8 @@ Try to remove the subzone
 			for (let [i,p] of players.entries()) {
 				if (p.status == "DEAD") continue;
 				game += `<div style='background: ${p.colour}; position: absolute; width: ${p.w}; height: ${p.h};
-						left: ${p.x}; bottom: ${p.y}; z-index: ${i}; transform: rotate(${(p.angle != null) ? (-90-p.angle) : 0}deg);
-						opacity: ${p.status < 0 ? 0.25 : 1};'>${p.id}</div>`;
+						left: ${p.x}; bottom: ${p.y}; z-index: ${i+1}; transform: rotate(${(p.angle != null) ? (-90-p.angle) : 0}deg);
+						opacity: ${p.status < 0 ? 0.25 : 1}; font-size: ${Math.min(p.w, p.h)}px;'>${p.id}</div>`;
 			}
 			if (assets.length != 0) {
 				for (let [i,a] of assets.entries()) {
@@ -2642,14 +2666,14 @@ Try to remove the subzone
 					ctx.globalAlpha = (p.status < 0) ? 0.25 : 1;
 					ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
 					ctx.fillStyle = "rgb(200,200,200)";
-					ctx.font = "5rem Times New Roman";
+					ctx.font = `${Math.min(p.w, p.h)}px Times New Roman"`;
 					let text = ctx.measureText(p.id);
 					ctx.fillText(p.id, -p.w / 2 + (p.w-text.width)/2, text.actualBoundingBoxAscent+p.h);
 				} else {
 					ctx.globalAlpha = (p.status < 0) ? 0.25 : 1;
 					ctx.fillRect(p.x, canvas.height*(1-p.y/maxY)-p.h, p.w, p.h);
 					ctx.fillStyle = "rgb(200,200,200)";
-					ctx.font = "5rem Times New Roman";
+					ctx.font = `${Math.min(p.w, p.h)}px Times New Roman`;
 					let text = ctx.measureText(p.id);
 					ctx.fillText(p.id, p.x+(p.w-text.width)/2, canvas.height*(1-p.y/maxY)-p.h/2+text.actualBoundingBoxAscent/2);
 				}
@@ -2664,7 +2688,7 @@ Try to remove the subzone
 					ctx.fillRect(-a.w / 2, -a.h / 2, a.w, a.h);
 					if (a.text != null) {
 						ctx.fillStyle = "rgb(200,200,200)";
-						ctx.font = "5rem Times New Roman";
+						ctx.font = `5rem Times New Roman`;
 						let text = ctx.measureText(a.text);
 						ctx.fillText(a.text, -a.w / 2 + (a.w-text.width)/2, text.actualBoundingBoxAscent+a.h);
 					}
@@ -2673,7 +2697,7 @@ Try to remove the subzone
 					ctx.fillRect(a.x, canvas.height * (1 - a.y / maxY) - a.h, a.w, a.h);
 					if (a.text != null) {
 						ctx.fillStyle = "rgb(200,200,200)";
-						ctx.font = "5rem Times New Roman";
+						ctx.font = `5rem Times New Roman`;
 						let text = ctx.measureText(a.text);
 						ctx.fillText(a.text, a.x+(a.w-text.width)/2, canvas.height*(1-a.y/maxY)-a.h+text.actualBoundingBoxAscent);
 					}
@@ -2709,6 +2733,7 @@ Try to remove the subzone
 				playerDiv.style.bottom = p.y + "px";
 				playerDiv.style.transform = `rotate(${(p.angle != null) ? (-90-p.angle) : 0}deg)`;
 				playerDiv.style.opacity = (p.status < 0) ? 0.25 : 1;
+				playerDiv.style.fontSize = Math.min(p.w, p.h) + "px";
 			}
 			let assetIds = assets.map(a => `a${a.id}`);
 			let existingAssetDivs = Array.from(gZone.firstChild.querySelectorAll('[id^="a"]'));
@@ -2757,23 +2782,40 @@ Try to remove the subzone
 		if (!isFinite(minY)) {minY = 0; maxYc = tempcanvas.height;}
 		else tempcanvas.height = maxYc - minY;
 		let scale = Math.min(tempcanvas.width / (maxXc - minX), tempcanvas.height / (maxYc - minY));
-		for (let p of players) {
-			ctx.fillStyle = p.colour;
-			ctx.fillRect((p.x-minX) * scale,tempcanvas.height - ((p.y-minY+p.h) * scale),p.w * scale,p.h * scale);
-		}
 		for (let a of assets) {
 			ctx.fillStyle = a.colour;
 			ctx.fillRect((a.x-minX) * scale,tempcanvas.height - ((a.y-minY+a.h) * scale),a.w * scale,a.h * scale);
+			if (a.text != null) {
+				ctx.fillStyle = "rgb(200,200,200)";
+				ctx.font = `5rem Times New Roman`;
+				let text = ctx.measureText(a.text);
+				ctx.fillText(a.text, (a.x-minX) * scale + (a.w*scale-text.width)/2, tempcanvas.height - ((a.y-minY+a.h*.75) * scale) + text.actualBoundingBoxAscent);
+			}
 		}
+		for (let p of players) {
+			ctx.fillStyle = p.colour;
+			ctx.fillRect((p.x-minX) * scale,tempcanvas.height - ((p.y-minY+p.h) * scale),p.w * scale,p.h * scale);
+			ctx.fillStyle = "rgb(200,200,200)";
+			ctx.font = `${Math.min(p.w, p.h)}px Times New Roman`;
+			let text = ctx.measureText(p.id);
+			ctx.fillText(p.id, (p.x-minX) * scale + (p.w*scale-text.width)/2, tempcanvas.height - ((p.y-minY+p.h*.75) * scale) + text.actualBoundingBoxAscent);
+		}
+		const originalWidth = tempcanvas.width;
+		const originalHeight = tempcanvas.height;
+		const extra = 2; // thickness of the line
+		const newHeight = originalHeight + 2 * extra;
+		const imgData = ctx.getImageData(0, 0, originalWidth, originalHeight);
+		tempcanvas.height = newHeight;
+		ctx.putImageData(imgData, 0, extra);
 		ctx.strokeStyle = "#fff";
-		ctx.lineWidth = 10;
+		ctx.lineWidth = extra;
 		ctx.beginPath();
-		ctx.moveTo(0, 0);
-		ctx.lineTo(tempcanvas.width, 0);
+		ctx.moveTo(0, extra / 2);
+		ctx.lineTo(tempcanvas.width, extra / 2);
 		ctx.stroke();
 		ctx.beginPath();
-		ctx.moveTo(0, tempcanvas.height - 1);
-		ctx.lineTo(tempcanvas.width, tempcanvas.height - 1);
+		ctx.moveTo(0, tempcanvas.height - extra / 2);
+		ctx.lineTo(tempcanvas.width, tempcanvas.height - extra / 2);
 		ctx.stroke();
 		return tempcanvas.toDataURL();
 	}
