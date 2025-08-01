@@ -1,5 +1,6 @@
 <!DOCTYPE=html>
-<!-- oneButtonGames V4
+<title>oneButtonGamesV5</title>
+<!--
 A series of simple games that only need one button
 Last Modified Jul 25
 Use "npm i -g http-server" and "http-server" for codespace port
@@ -125,22 +126,26 @@ Use "npm i -g http-server" and "http-server" for codespace port
 		<div id=header class=head>Select A Game</div><br>
 		<div id=main>
 			<select id=game class=drop>
-				<option>Kitten Canon</option>
+
 				<option>First to Answer</option>
 				<option>Fastest Clicker</option>
 				<option>Reaction Test</option>
+				<option>Noise Maker</option>
+				<option>Morse Code</option>
+				<option>Guess Up 7 Up</option>
 				<option>Counting Game</option>
 				<option>Final Countdown</option>
 				<option>Target Value</option>
-				<option>Noise Maker</option>
-				<option>PT Audiometry</option>
-				<option>Morse Code</option>
-				<option>Guess Up 7 Up</option>
+				<option>Simon Says</option>
 				<option>Red Light Green Light</option>
 				<option>Flappy Bird</option>
 				<option>Frogger</option>
-				<option>Rythm Game</option>
 				<option>Platformer</option>
+				<option>Kitten Canon</option>
+				<option>Pong</option>
+
+				<option>PT Audiometry</option>
+				<option>Rythm Game</option>
 				<option>Hot Potato</option>
 				<option>Hot Potato V2</option>
 				<option>Robin Hood</option>
@@ -148,13 +153,11 @@ Use "npm i -g http-server" and "http-server" for codespace port
 				<option>PEMDAS</option>
 				<option>Hill Climb Racing</option>
 				<option>Langton Snake</option>
-				<option>Simon Says</option>
 				<option>TP Unroll</option>
 				<option>Lock Picking</option>
 				<option>DVD Logos</option>
 				<option>Skill Stop Jackpot</option>
 				<option>Bowling Sorta</option>
-				<option>Pong</option>
 				<option>Kahoot</option>
 			</select>
 			<button class=btn onclick=chooseGame()>Start the Game</button>
@@ -365,259 +368,28 @@ Try to remove the subzone
 		//eliminating the player (base) will eliminate the player
 	}
 
+	function peggle()  {
+		//players have a ball that they can launch at pegs
+		//pegs are randomly placed and will be eliminated on collision
+		//if the ball hits the bottom it is eliminated
+		//fun mode is the players become the pegs and have to run
+	}
+
+	function musicalChairs() {
+		//players move around a circle, when the music stops they have to stop
+		//if they are not on a chair they are eliminated
+		//fun mode is the players become the chairs and have to run
+	}
+
 	// assets = [{ text:``, x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
 	// opts.style.display = "none";
 	// for (let p of players) {
 	// 	p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
-	// 	p.y = maxY/3; p.w = Math.min(50,maxX/players.length/5); p.h = p.w;
+	// 	p.y = maxY/3; p.w = p.h = Math.min(50,maxX/players.length/5);
 	// }
 
 
-	function kittenCanon() {
-		if (gameState == 0) {
-			gameState = 1;
-			timeLimit = currTime + 3000;
-			temp = []; //fill with bombs and spikes
-			for (let p of players) {
-				p.score = [maxX*.1,maxX*.1]; //angle and power then Vx and Vy
-				p.x = maxX*.1;
-				p.y = maxY*.9 - (maxY*.8 / (players.length+1) * (players.indexOf(p)+1));
-				p.h = Math.min(33,maxY*.8/players.length/2);
-				p.w = p.h;
-			}
-		}
-		if (gameState == 1) {
-			assets = [{ text:`Set your angle: ${Math.ceil((timeLimit - currTime)/1000)}`,
-				x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
-			assets.push({x: maxX*.1, y: maxY*.1, w: maxX*.8, h: maxY*.8, id: "box", colour: "gray"});
-			assets.push({text: "0 deg", x: 0, y: maxY*.05, w: maxX*.2, h: maxY*.05, id: "min", colour: "transparent"});
-			assets.push({text: "90 deg", x: maxX*.8, y: maxY*.05, w: maxX*.2, h: maxY*.05, id: "max", colour: "transparent"});
-			for (let p of players) {
-				if (p.pressed != 0) p.score[0] += fps/(maxX*.0008);
-				if (p.score[0] > maxX*.9-p.w) p.score[0] = maxX*.1;
-				p.x = p.score[0];
-			}
-			if (currTime > timeLimit) {
-				gameState = 2;
-				timeLimit = currTime + 3000;
-			}
-		}
-		if (gameState == 2) {
-			assets[0].text = `Set your power: ${Math.ceil((timeLimit - currTime)/1000)}`;
-			assets[2].text = "0 px/s";
-			assets[3].text = "100 px/s";
-			for (let p of players) {
-				if (p.pressed == currTime) p.score[1] += fps/.35;
-				else p.score[1] -= fps/4;
-				if (p.score[1] < maxX*.1) p.score[1] = maxX*.1;
-				else if (p.score[1] > maxX*.9-p.w) p.score[1] = maxX*.9-p.w;
-				p.x = p.score[1];
-			}
-			if (currTime > timeLimit) {
-				gameState = 3;
-				for (let p of players) {
-					p.score[0] = ((p.score[0]-(maxX*.1))/(maxX*.8)*90) * Math.PI/180;
-					p.score[1] = (p.score[1]-(maxX*.1))/(maxX*.8)*100;
-					let temp2 = [0,0];
-					temp2[0] = Math.cos(p.score[0])*p.score[1];
-					temp2[1] = Math.sin(p.score[0])*p.score[1];
-					p.score = [...temp2,1,1];
-				}
-			}
-		}
-		if (gameState == 3) {
-			gameState = 4;
-			let maxPX = Math.max(...players.map(p => p.score[2] + p.w + maxX*.75));
-			let minX = Math.min(...players.map(p => p.score[2]-maxX*.1));
-			if (Math.random() > .95) {
-				let type = (Math.random() < .5) ? "bomb" : "spike";
-				if (rando.checked) temp.push({type: type, x: maxPX + maxX*.25, y: maxY*Math.random(), w: 50, h: 50});
-				else temp.push({type: type, x: maxPX + maxX*.25, y: 0, w: 50, h: 50});
-				temp.at(-1).colour = (temp.at(-1).type == "spike") ? "magenta" : "red";
-				temp.at(-1).id = temp.length;
-			}
-			assets = [{text: Math.round(maxPX/10), x: 0, y: maxY, w:maxX, h:0, id: "score", colour: "transparent"}];
-			for (let t of temp) {
-				let copy = { ...t };
-				assets.push(copy);
-				assets[assets.length-1].x -= minX;
-			}
-			for (let p of players) {
-				if (p.status < 0) continue;
-				if (p.score[0] >= 0.1) {
-					gameState = 3;
-					p.score[2] += p.score[0];
-					p.score[3] += p.score[1];
-					if (p.score[3] < 0) {
-						p.score[3] = 0;
-						p.score[0] *= .9;
-						p.score[1] *= -.85;
-					}
-					p.score[0] *= .999;
-					p.score[1] -= 1;
-					if (p.score[0] < .1) p.score[0] = 0;
-				}
-				else p.status = -1;
-				p.x = p.score[2] - minX;
-				p.y = p.score[3];
-				for (let a of assets) {
-					if (a.x + a.w < p.x || a.x > p.x + p.w || a.id == "score") continue;
-					if (simpleCollide(p,a)) {
-						if (a.type == "spike") p.status = -1;
-						else {
-							p.score[0] += 10;
-							if (p.score[1] < 1) p.score[1] *= -1;
-							p.score[1] += 50;
-						}
-					}
-				}
-			}
-		}
-		if (gameState == 4) {
-			gameState = 5;
-			assets = [];
-			for (let p of players) {
-				p.status = "DEAD";
-				p.x = p.score[2];
-				p.y = p.score[3];
-			}
-			let maxPX = Math.max(...players.map(p => p.x));
-			for (let t of temp) {
-				if (t.x == null || t.x > maxX*.8 + maxPX) continue;
-				if (t.x + t.w > maxX + maxPX) t.w = maxX - t.x;
-				assets.push(t);
-			}
-			maxPX = Math.max(...players.map(p => p.x + p.w + maxX*.75));
-			assets.push({text: Math.round(maxPX/10), x: Math.max(...players.map(p => p.x))-maxX*.1, y: maxY, w:maxX, h:0, id: "score", colour: "transparent"});
-			endDisplay();
-		}
-	}
-
 //========================================== Rework Scroll Skip ==========================================
-	function reactionTest() {
-		if (gameState == 0) {
-			pause = true;
-			gZone.innerHTML = "";
-			gZone.setAttribute("style","width:maxX; height:maxY; position: relative; overflow: hidden;");
-			opts.style.display = "none";
-			timeLimit = currTime + Math.random()*9000+1000;
-			gameState = 1;
-		}
-		if (gameState == 1) {
-			for (let p of players) {
-				if ((p.pressed != 0) && (p.score == 0)) {
-					if (currTime == timeLimit) p.score = "On the Money!"
-					else if (currTime < timeLimit) p.score = "Early Bird";
-					else p.score = Math.round(currTime - timeLimit) + "ms late"
-				}
-			}
-			if (currTime > timeLimit) {
-				gZone.innerHTML = `<div style='position: fixed; bottom: ${(rando.checked) ? Math.random()*maxY : maxY*.75};
-					left: ${(rando.checked) ? Math.random()*maxX : maxX/2};z-index: 1'>&#129712</div>`;
-				if (currTime > timeLimit + 3000) {
-					gameState = 2;
-					gZone.innerHTML = "<br>Time is up!<br>";
-					for (let p of players) {if (p.score == 0) p.score = "Too Slow";}
-					gZone.innerHTML += displayPlayersTable("score");
-				}
-			}
-		}
-	}
-
-	function finalCountdown() {
-		if (gameState == 0) {
-			gameState = 1;
-			timeLimit = currTime + 10000;
-			sZone.innerHTML = "";
-		}
-		if (gameState == 1) {
-			if (currTime < timeLimit - ((rando.checked) ? Math.random()*5000 : 3000)) {
-				gZone.innerHTML = timeLimit-currTime;
-			}
-			else if (currTime - timeLimit > 4000) {
-				sZone.style.display = "";
-				gZone.style.display = "";
-				gZone.innerHTML = "Time is UP!";
-				gameState = 2;
-			}
-			else {
-				sZone.style.display = "none";
-				gZone.style.display = "none";
-			}
-			for (let p of players) {
-				if (p.pressed != 0 && p.status == 0) {
-					p.status = "FINISHED";
-					if (currTime < timeLimit) sZone.innerHTML += `<div style='color: ${p.colour};'>
-						Player ${p.id} was ${timeLimit-currTime}ms early</div>`;
-					else if (currTime == timeLimit) sZone.innerHTML += `<div style='color: ${p.colour};'>
-						Player ${p.id} was on the mark</div>`;
-					else sZone.innerHTML += `<div style='color: ${p.colour};'>Player ${p.id} was 
-						${currTime-timeLimit}ms late</div>`;
-				}
-			}
-		}
-	}
-
-	function countingGame() {
-		if (gameState == 0) {
-			gameState = 1;
-			temp = [];
-			gZone.style.width = window.innerWidth;
-			gZone.style.height = "65%";
-			document.body.style.overflow = "hidden";
-			for (let i = 0; i < Math.round(Math.random()*20)+5; i++) {
-				let x = Math.round(Math.random()*gZone.offsetWidth);
-				let y = Math.round(Math.random()*gZone.offsetHeight);
-				let t = Math.round(Math.random()*5000);
-				temp.push([x,y,t]);
-			}
-			startTime = currTime;
-		}
-		if (gameState == 1) {
-			gameState = 2, game = "";
-			for (let i in temp) {
-				if (temp[i][0] < 0 || temp[i][0] > gZone.offsetWidth || temp[i][1] < 0 
-					|| temp[i][1] > gZone.offsetHeight) continue;
-				if (currTime > startTime + temp[i][2]) {
-					if (rando.checked) {
-						temp[i][0] += Math.round(Math.random()*50)*(Math.random() < 0.5 ? -1 : 1)
-						temp[i][1] += Math.round(Math.random()*50)*(Math.random() < 0.5 ? -1 : 1);
-					}
-					else {
-						(temp[i][0] < .5*gZone.offsetWidth) ? temp[i][0]-- :  temp[i][0]++;
-						(temp[i][1] < .5*gZone.offsetHeight) ? temp[i][1]-- : temp[i][1]++;
-					}
-				}
-				gameState = 1; 
-				game += `<div style='bottom:${temp[i][1]}; left:${temp[i][0]}; 
-					position:absolute;'>&#128029</div>`;
-			}
-			gZone.innerHTML = game;
-		}
-		if (gameState == 2) {
-			if (timeLimit == 0) timeLimit = currTime + 10000;
-			if (currTime < timeLimit) {
-				gZone.innerHTML = `Place your guess now!<br>Time: ${Math.round((timeLimit-currTime)/1000)}`;
-				for (let p of players) {if (p.pressed == currTime) p.score++;}
-				gZone.innerHTML += displayPlayersTable("score");
-			}
-			else {
-				gZone.innerHTML = `Time is UP!<br>The target was ${temp.length}<br><br>`;
-				for (let p of players) {
-					if (p.score == 0) {
-						p.status = "No guess";
-						continue;
-					}
-					p.score -= temp.length;
-					if (p.score > 0) p.status = `Over ${p.score}`;
-					else if (p.score < 0) p.status = `Under ${p.score*-1}`;
-					else p.status = `Exactamundo`;
-				}
-				gZone.innerHTML += displayPlayersTable("status");
-				gameState = 3;
-			}
-		}
-	}
 
 	function ptAudiometry() {
 		if (gameState == 0) {
@@ -651,88 +423,6 @@ Try to remove the subzone
 			sZone.innerHTML = "<br>";
 			for (let p of players) {
 				if (p.score < 0) sZone.innerHTML += `Player ${p.id} should see a doctor<br>`;
-			}
-		}
-	}
-
-	function targetValue() {
-		if (gameState == 0) {
-			gameState = 1;
-			(rando.checked) ? temp = Math.round(Math.random()*50) : temp = Math.round(Math.random()*500);
-			timeLimit = currTime + 10000;
-			startTime = currTime;
-		}
-		if (gameState == 1) {
-			let temp2 = Math.ceil(fps/5)
-			gZone.innerHTML = `The target is ${temp}<br>Time remaining: ${timeLimit - currTime}<br><br>`;
-			for (let p of players) {
-				if (p.pressed != 0) (rando.checked && Math.random()>.5) ? p.score -= temp2 : p.score += temp2;
-			}
-			gZone.innerHTML += displayPlayersTable("score");
-			if (currTime >= timeLimit) {
-				gameState = 2;
-				gZone.innerHTML = `The target is ${temp}<br>Time is UP!<br><br>`;
-				for (let p of players) {
-					if (p.score == 0) {
-						p.status = "Loser";
-						continue;
-					}
-					p.score -= temp;
-					if (p.score > 0) p.status = `Over ${p.score}`;
-					else if (p.score < 0) p.status = `Under ${p.score*-1}`;
-					else {
-						p.status = `Hit the target`;
-						sZone.innerHTML += `<br>Player ${p.id} hit the target!`;
-					}
-				}
-				gZone.innerHTML += displayPlayersTable("status");
-			}
-		}
-	}
-
-	function guessUp7Up(){
-		if (gameState == 0) {
-			timeLimit = currTime + 5000;
-			gameState = 1;
-			temp = [];
-			for (let p of players) {
-				temp.push((Math.random() < .5) ? "Up" : "Down");
-				if (p.status == "Dead") continue;
-				p.status = "Down";
-			}
-			if (!rando.checked) temp = (Math.random() < .5) ? "Up" : "Down";
-		}
-		if (gameState == 1) {
-			gZone.innerHTML = `Were you picked?<br>
-				Time remaining: ${Math.ceil((timeLimit-currTime)/1000)}<br>`;
-			for (let p of players) {
-				if (p.pressed == currTime && p.status != "Dead") {
-					p.status = (p.status == "Down") ? "Up" : "Down";
-				}
-			}
-			if (!rando.checked) gZone.innerHTML += displayPlayersTable('status');
-			if (currTime >= timeLimit) {
-				gameState = 2;
-				timeLimit = currTime + 5000;
-				for (let p of players) {
-					if (p.status == (Array.isArray(temp) ? temp[i] : temp)) {
-						p.status = "Alive";
-						p.score++;
-					}
-					else p.status = "Dead";
-				}
-			}
-		}
-		if (gameState == 2) {
-			gZone.innerHTML = `Farewell to the fallen<br>
-				Time remaining: ${Math.ceil((timeLimit-currTime)/1000)}<br>`;
-			let temp2 = false;
-			for (let p of players) {if (p.status == "Alive") temp2 = true;}
-			gZone.innerHTML += displayPlayersTable('status');
-			if (currTime >= timeLimit && temp2) gameState = 0;
-			else if (!temp2) {
-				gameState = 3;
-				gZone.innerHTML = "Rounds SURVIVED<br>" + displayPlayersTable('score');
 			}
 		}
 	}
@@ -1269,52 +959,6 @@ Try to remove the subzone
 						if (p.status != "DEAD") {temp3 = p.id; break;}
 					}
 					gZone.innerHTML = `Player ${temp3} JUAN the game!`
-				}
-			}
-		}
-	}
-
-	function simonSays() {
-		let temp2 = [
-			"Simon says press your button",
-			"Simon says don't press your button",
-			"Press your button",
-			"Don't Press your button",
-			"Simon says keep pressing your button",
-			"Simon says don't keep pressing your button",
-			"Keep pressing your button",
-			"Don't keep pressing your button"
-		];
-		if (gameState == 0) {
-			timeLimit = currTime + 5000;
-			gameState = 1;
-			temp = Math.round(Math.random()*3);
-			gZone.innerHTML = temp2[temp] + "<br>";
-			if (rando.checked) gZone.innerHTML = temp2[temp].split(" ").sort(() => Math.random() - 0.5).join(" ") + "<br>";
-		}
-		if (gameState == 1) {
-			sZone.innerHTML = displayPlayersTable("status");
-			for (let p of players) {
-				if (p.status == "Dead") continue;
-				p.status = (p.pressed != 0) ? "E" : "";
-			}
-			if (timeLimit < currTime) {
-				timeLimit = currTime + 3000;
-				for (let p of players) {
-					if (p.status == "Dead") continue;
-					if ([0,3,4,6].includes(temp) && p.pressed != 0 || [1,2,5,7].includes(temp) && p.pressed == 0) p.score++;
-					else p.status = "Dead";
-				}
-				if ([0,3,4,6].includes(temp)) temp = Math.round(Math.random()*3) + 4;
-				else temp = Math.round(Math.random()*3);
-				gZone.innerHTML = temp2[temp] + "<br>";
-				if (rando.checked) gZone.innerHTML = temp2[temp].split(" ").sort(() => Math.random() - 0.5).join(" ") + "<br>";
-				let temp3 = (players.filter(p => p.status != 'Dead').length > 0) ? true : false;
-				gameState = (temp3) ? 1 : 2;
-				if (gameState == 2) {
-					gZone.innerHTML = "GAME OVER! <br> Rounds obeyed:";
-					sZone.innerHTML = displayPlayersTable("score");
-					sZone.innerHTML += `<br> Player ${minMaxScore()[1]} was da best`;
 				}
 			}
 		}
@@ -2163,7 +1807,8 @@ Try to remove the subzone
 						pan: (rando.checked) ? Math.random()*2-1 : 0
 					});
 					if (p.pressed == currTime) {
-						assets.push({text: note[Math.floor(Math.random()*note.length)],x: p.x, y: p.y+p.h, w: p.w, h: p.h, id: "noise", colour: "transparent"});
+						assets.push({text: note[Math.floor(Math.random()*note.length)],x: p.x, y: p.y+p.h, w: p.w, h: p.h,
+							id: `note${assets.length}`, colour: "transparent"});
 					}
 				}
 			}
@@ -2475,6 +2120,497 @@ Try to remove the subzone
 		}
 	}
 
+	function kittenCanon() {
+		if (gameState == 0) {
+			gameState = 1;
+			if (!options.innerHTML.includes("Frequency")) {
+				options.innerHTML = `Player Size: <input type=range id=ps value=33 min=1 max=100>
+				<br>Frequency: <input type=range id=fq value=.05 min=.01 max=.25 step=.01>
+				<br>Spike Size: <input type=range id=ss value=50 min=10 max=100 step=5>
+				<br>Bomb Size: <input type=range id=bs value=50 min=10 max=100 step=5>
+				<br>Bomb Strength: <input type=range id=st value=10 min=1 max=100>
+				<br>Bounce Friction: <input type=range id=bf value=1.1 min=1.1 max=2 step=.1>
+				<br>Bounce Strength: <input type=range id=bn value=.85 min=0.05 max=1 step=.05>
+				<br>Gravity: <input type=range id=gr value=1 min=.1 max=1.5 step=.1>`;
+			}
+			timeLimit = currTime + 3000;
+			temp = []; //fill with bombs and spikes
+			for (let p of players) {
+				p.score = [maxX*.1,maxX*.1]; //angle and power then Vx and Vy
+				p.x = maxX*.1;
+				p.y = maxY*.9 - (maxY*.8 / (players.length+1) * (players.indexOf(p)+1));
+				p.s = Math.min(1*ps.value,maxY*.8/players.length/2);
+				p.w = p.h = p.s;
+			}
+		}
+		if (gameState == 1) {
+			assets = [{ text:`Set your angle: ${Math.ceil((timeLimit - currTime)/1000)}`,
+				x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
+			assets.push({x: maxX*.1, y: maxY*.1, w: maxX*.8, h: maxY*.8, id: "box", colour: "gray"});
+			assets.push({text: "0 deg", x: 0, y: maxY*.05, w: maxX*.2, h: maxY*.05, id: "min", colour: "transparent"});
+			assets.push({text: "90 deg", x: maxX*.8, y: maxY*.05, w: maxX*.2, h: maxY*.05, id: "max", colour: "transparent"});
+			for (let p of players) {
+				if (p.pressed != 0) p.score[0] += fps/(maxX*.0008);
+				if (p.score[0] > maxX*.9-p.w) p.score[0] = maxX*.1;
+				p.x = p.score[0];
+			}
+			if (currTime > timeLimit) {
+				gameState = 2;
+				timeLimit = currTime + 3000;
+			}
+		}
+		if (gameState == 2) {
+			assets[0].text = `Set your power: ${Math.ceil((timeLimit - currTime)/1000)}`;
+			assets[2].text = "0 px/s";
+			assets[3].text = "100 px/s";
+			for (let p of players) {
+				if (p.pressed > currTime-100) p.score[1] += fps/(maxX*.0025);
+				else p.score[1] -= fps/(maxX*.01);
+				if (p.score[1] < maxX*.1) p.score[1] = maxX*.1;
+				else if (p.score[1] > maxX*.9-p.w) p.score[1] = maxX*.9-p.w;
+				p.x = p.score[1];
+			}
+			if (currTime > timeLimit) {
+				gameState = 3;
+				for (let p of players) {
+					p.score[0] = ((p.score[0]-(maxX*.1))/(maxX*.8)*90) * Math.PI/180;
+					p.score[1] = (p.score[1]-(maxX*.1))/(maxX*.8)*100;
+					let temp2 = [0,0];
+					temp2[0] = Math.cos(p.score[0])*p.score[1];
+					temp2[1] = Math.sin(p.score[0])*p.score[1];
+					p.score = [...temp2,1,1];
+				}
+			}
+		}
+		if (gameState == 3) {
+			gameState = 4;
+			let alivePlayers = players.filter(p => p.status >= 0);
+			if (alivePlayers.length > 0) gameState = 3;
+			let maxPX = Math.max(...alivePlayers.map(p => p.score[2] + p.w + maxX*.75));
+			let minX = Math.min(...alivePlayers.map(p => p.score[2] - maxX*.1));
+			let scale = maxX / (maxPX - minX);
+			if (alivePlayers.length == 1) scale = 1;
+			if (Math.random() < fps*fq.value/15 && alivePlayers.length > 0) {
+				let type = (Math.random() < .5) ? "bomb" : "spike";
+				if (rando.checked) temp.push({type: type, x: maxPX + maxX*.25, y: maxY*Math.random()});
+				else temp.push({type: type, x: maxPX + maxX*.25, y: 0});
+				temp.at(-1).colour = (temp.at(-1).type == "spike") ? "magenta" : "red";
+				temp.at(-1).w = temp.at(-1).h = (temp.at(-1).type == "spike") ? 1*ss.value : 1*bs.value;
+				temp.at(-1).id = temp.length;
+			}
+			assets = [{text: Math.round(maxPX/10), x: 0, y: maxY, w: maxX, h: 0, id: "score", colour: "transparent"}];
+			for (let t of temp) {
+				let copy = { ...t };
+				assets.push(copy);
+				if (alivePlayers.length != 1) {
+					assets[assets.length-1].x = (assets[assets.length-1].x - minX) * scale;
+					assets[assets.length-1].w *= scale;
+					assets[assets.length-1].h *= scale;
+				}
+				else assets[assets.length-1].x -= minX;
+			}
+			for (let p of players) {
+				if (p.status == "DEAD") continue;
+				if (p.score[0] >= 0.1) {
+					p.score[2] += p.score[0] * (fps/17);
+					p.score[3] += p.score[1] * (fps/17);
+					if (p.score[3] < 0) {
+						p.score[3] = 0;
+						p.score[0] *= 2-1*bf.value;
+						p.score[1] *= -1*bn.value;
+					}
+					p.score[0] *= Math.pow(.999, fps/17);
+					p.score[1] -= 1*gr.value * (fps/17);
+				}
+				else {
+					p.score[0] = 0;
+					p.status = "DEAD";
+				}
+				if (alivePlayers.length != 1) {
+					p.x = (p.score[2] - minX) * scale;
+					p.y = p.score[3] * scale;
+					p.w = p.h = p.s * scale;
+				}
+				else {
+					p.x = p.score[2] - minX;
+					p.y = p.score[3];
+					p.w = p.h = p.s;
+				}
+				if (p.y > maxY) {
+					p.w = p.h = Math.max(p.s * (maxY / p.y), 10);
+					p.y = maxY - p.h;
+				}
+				for (let a of assets) {
+					if (a.id == "score" || p.score[3] > maxY) continue;
+					if (simpleCollide(p,a)) {
+						if (a.type == "spike") {
+							p.status = -1;
+							p.score[0] = p.score[1] = 0;
+						}
+						else {
+							p.score[0] += 1 * st.value;
+							if (p.score[1] < 1) p.score[1] *= -1;
+							p.score[1] += 3 * st.value;
+						}
+					}
+				}
+			}
+		}
+		if (gameState == 4) {
+			gameState = 5;
+			assets = [];
+			for (let p of players) {
+				p.status = "DEAD";
+				p.x = p.score[2];
+				p.y = p.score[3];
+				p.w = p.h = p.s;
+			}
+			let maxPX = Math.max(...players.map(p => p.x));
+			for (let t of temp) {
+				if (t.x == null || t.x > maxX*.8 + maxPX) continue;
+				if (t.x + t.w > maxX + maxPX) t.w = maxX - t.x;
+				assets.push(t);
+			}
+			maxPX = Math.max(...players.map(p => p.x + p.w + maxX*.75));
+			assets.push({text: Math.round(maxPX/10), x: Math.max(...players.map(p => p.x))-maxX*.1, y: maxY, w:maxX, h:0, id: "score", colour: "transparent"});
+			endDisplay();
+		}
+	}
+	
+	function guessUp7Up(){
+		if (gameState == 0) {
+			timeLimit = currTime + 5000;
+			gameState = 1;
+			temp = [];
+			opts.style.display = "none";
+			let alivePlayers = players.filter(p => p.status != "DEAD");
+			for (let p of players) {
+				if (p.status == "DEAD") continue;
+				p.x = maxX / (alivePlayers.length+1) * (alivePlayers.indexOf(p)+1);
+				p.y = maxY/3; p.w = p.h = Math.min(50,maxX/alivePlayers.length/5);
+				temp.push((Math.random() < .5) ? 0 : 1);
+				p.status = 0;
+			}
+			if (rando.checked) temp = (Math.random() < .5) ? 0 : 1;
+		}
+		if (gameState == 1) {
+			assets = [{ text:`Were you picked? ${Math.ceil((timeLimit-currTime)/1000)}`,
+				x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
+			for (let p of players) {
+				if (p.pressed == currTime && p.status != "DEAD") {
+					p.status = (p.status == 0) ? 1 : 0;
+					p.y = (p.status == 0) ? maxY/3 : maxY/2;
+				}
+				if (rando.checked) p.w = p.h = 0;
+			}
+			if (currTime >= timeLimit) {
+				gameState = 2;
+				timeLimit = currTime + 3000;
+				let alivePlayers = players.filter(p => p.status != "DEAD");
+				for (let [i, p] of players.entries()) {
+					if (p.status == "DEAD") continue;
+					if (p.status == (Array.isArray(temp) ? temp[i] : temp)) p.score++;
+					else p.status = -1;
+					p.w = p.h = Math.min(50,maxX/alivePlayers.length/5);
+
+				}
+			}
+		}
+		if (gameState == 2) {
+			assets = [{ text:`Farewell to the fallen ${Math.ceil((timeLimit-currTime)/1000)}`,
+				x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
+			let alivePlayers = players.filter(p => p.status != "DEAD" && p.status != -1);
+			if (currTime >= timeLimit && alivePlayers.length > 0) {
+				gameState = 0;
+				for (let p of players) {if (p.status == -1) p.status = "DEAD";}
+			}
+			else if (alivePlayers.length == 0) {
+				assets[0].text = "All players have been eliminated!";
+				gameState = 3;
+			}
+		}
+	}
+
+	function countingGame() {
+		if (gameState == 0) {
+			gameState = 1;
+			opts.style.display = "none";
+			temp = [];
+			for (let i = 0; i < Math.round(Math.random()*20)+5; i++) {
+				let x = Math.round(Math.random()*maxX*.8) + maxX*.1;
+				let y = Math.round(Math.random()*maxY*.8) + maxY*.1;
+				let t = Math.round(Math.random()*5000);
+				temp.push({x: x, y: y, time: t, id: i, h: 50, w: 50, colour: "yellow"});
+			}
+			for (let p of players) {
+				p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
+				p.y = maxY/3; p.w = p.h = Math.min(50,maxX/players.length/5);
+				p.score = 0;
+				p.status = "DEAD";
+			}
+			timeLimit = currTime;
+		}
+		if (gameState == 1) {
+			gameState = 2;
+			assets = [];
+			for (let t of temp) {
+				if (t.x + t.w < 0 || t.x > maxX || t.y + t.h < 0 || t.y > maxY) continue;
+				if (currTime > timeLimit + t.time) {
+					if (rando.checked) {
+						t.x += Math.round(Math.random()*50)*(Math.random() < 0.5 ? -1 : 1)
+						t.y += Math.round(Math.random()*50)*(Math.random() < 0.5 ? -1 : 1);
+					}
+					else {
+						(t.x < .5*maxX) ? t.x-- :  t.x++;
+						(t.y < .5*maxY) ? t.y-- : t.y++;
+					}
+				}
+				assets.push({x: t.x, y: t.y, w: t.w, h: t.h, id: t.id, colour: t.colour});
+				gameState = 1;
+			}
+			if (gameState == 2) {
+				for (let p of players) {p.status = 0;}
+				timeLimit = currTime + 5000;
+			}
+		}
+		if (gameState == 2) {
+			if (currTime < timeLimit) {
+				assets = [{ text:`Place your guess now! ${Math.round((timeLimit-currTime)/1000)}`,
+					x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
+				for (let p of players) {
+					if (p.pressed == currTime) p.score++;
+					assets.push({text: p.score, x:p.x, y:(maxY/3)-p.h, w:p.w, h:p.h*.99, id:`score${p.id}`, colour:"transparent"});;
+				}
+			}
+			else {
+				gameState = 3;
+				for (let p of players) {
+					p.w = p.h = Math.min(50,maxY/players.length/5);
+					p.y = maxY*.8 - (maxY*.8 / (players.length+1) * (players.indexOf(p)+1));
+				}
+				assets = [{text:`The target was ${temp.length}`, x: 0, y: maxY, w:maxX, h:0, id: "info", colour: "transparent"}];
+				assets.push({x:0, w:maxX, y:0, h:maxY*.8, id:"mid", colour: "gold"});
+				assets.push({x:0, w:players[0].w, y:0, h:maxY*.8, id:"early", colour: "red"});
+				assets.push({x:maxX-players[0].w, w:players[0].w, y:0, h:maxY*.8, id:"late", colour: "red"});
+				assets.push({x:maxX/2-players[0].w/2, w:players[0].w, y:0, h:maxY*.8, id:"money", colour: "green"});
+				for (let p of players) {
+					if (p.score == 0) p.x = 0;
+					else {
+						p.score -= temp.length;
+						p.x = p.score/temp.length*(maxX-p.w) + (maxX/2-p.w/2);
+						if (p.score < -temp.length/2) p.x = 0;
+						else if (p.score > temp.length/2) p.x = maxX-p.w;
+					}
+					if (p.score != 0) {
+						assets.push({text:p.score, x:p.x, w:p.w, y:p.y-p.h*.5, h:p.h, id:p.id, colour: "transparent", scale:.5});
+						if (Math.abs(p.score) > temp.length/2) assets.at(-1).scale = .25;
+					}
+				}
+				endDisplay();
+			}
+		}
+	}
+
+	function simonSays() {
+		let temp2 = [
+			"Simon says press your button",
+			"Simon says don't press your button",
+			"Press your button",
+			"Don't Press your button",
+			"Simon says keep pressing your button",
+			"Simon says don't keep pressing your button",
+			"Keep pressing your button",
+			"Don't keep pressing your button"
+		];
+		if (gameState == 0) {
+			opts.style.display = "none";
+			timeLimit = currTime + 5000;
+			gameState = 1;
+			temp = Math.round(Math.random()*3);
+			assets = [{ text:temp2[temp], x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
+			if (rando.checked) assets[0].text = temp2[temp].split(" ").sort(() => Math.random() - 0.5).join(" ");
+			for (let p of players) {
+				p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
+				p.y = maxY/3; p.w = p.h = Math.min(50,maxX/players.length/5);
+			}
+		}
+		if (gameState == 1) {
+			for (let p of players) {
+				if (p.status < 0) continue;
+				p.y = (p.pressed != 0) ? maxY/2 : maxY/3;
+			}
+			if (timeLimit < currTime) {
+				timeLimit = currTime + 3000;
+				for (let p of players) {
+					if (p.status < 0) continue;
+					if ([0,3,4,7].includes(temp) && p.pressed != 0 || [1,2,5,6].includes(temp) && p.pressed == 0) p.score++;
+					else p.status = -1;
+				}
+				if ([0,3,4,6].includes(temp)) temp = Math.round(Math.random()*3) + 4;
+				else temp = Math.round(Math.random()*3);
+				assets[0].text = temp2[temp];
+				if (rando.checked) assets[0].text = temp2[temp].split(" ").sort(() => Math.random() - 0.5).join(" ");
+				let temp3 = (players.filter(p => p.status != -1).length > 0) ? true : false;
+				gameState = (temp3) ? 1 : 2;
+				if (gameState == 2) {
+					assets[0].text = "GAME OVER! Rounds obeyed:";
+					assets.push({ text:`Player ${minMaxScore()[1].join(", ")} was da best`, x: 0, y: maxY/3, w:maxX, h:maxY/2, id: "win", colour: "transparent"});
+					for (let p of players) {
+						p.y = maxY/3;
+						assets.push({text: p.score, x:p.x, y:(maxY/3)+p.h, w:p.w, h:p.h*.99, id:`score${p.id}`, colour:"transparent"});
+					}
+				}
+			}
+		}
+	}
+
+	function reactionTest() {
+		if (gameState == 0) {
+			opts.style.display = "none";
+			timeLimit = currTime + Math.random()*9000+1000;
+			for (let p of players) {
+				p.status = "DEAD";
+				p.x = maxX*.1; p.w = p.h = Math.min(50,maxY/players.length/5);
+				p.y = maxY*.8 - (maxY*.8 / (players.length+1) * (players.indexOf(p)+1));
+			}
+			gameState = 1;
+		}
+		if (gameState == 1) {
+			for (let p of players) {
+				if ((p.pressed != 0) && (p.score == 0)) p.score = Math.round(currTime - timeLimit)+1;
+			}
+			if (currTime > timeLimit) {
+				assets = [{x: (rando.checked) ? Math.random()*maxX : maxX/2, y: (rando.checked) ? Math.random()*maxY : maxY*.75,
+					w: 25, h:25, id: "fly", colour: "gray"}];
+				if (currTime > timeLimit + 3000) {
+					gameState = 2;
+					assets = [{text:`Time's UP!`, x: 0, y: maxY, w:maxX, h:0, id: "info", colour: "transparent"}];
+					assets.push({x:0, w:maxX, y:0, h:maxY*.8, id:"mid", colour: "gold"});
+					assets.push({x:0, w:players[0].w, y:0, h:maxY*.8, id:"early", colour: "red"});
+					assets.push({x:maxX-players[0].w, w:players[0].w, y:0, h:maxY*.8, id:"late", colour: "red"});
+					assets.push({x:players[0].w, w:players[0].w, y:0, h:maxY*.8, id:"money", colour: "green"});
+					for (let p of players) {
+						p.status = 0;
+						if (p.score == 0) p.x = maxX-p.w;
+						else p.x = (p.score-1)/3000*(maxX-players[0].w) + players[0].w;
+						if (p.score < 0) p.x = 0;
+						if (p.score != 0) {
+							assets.push({text:p.score-1, x:p.x, w:p.w, y:p.y-p.h*.5, h:p.h, id:p.id, colour: "transparent", scale:.5});
+							if (p.score > 3000 || p.score < 0) assets.at(-1).scale = .25;
+						}
+					}
+					endDisplay();
+				}
+			}
+		}
+	}
+
+	function finalCountdown() {
+		if (gameState == 0) {
+			gameState = 1;
+			opts.style.display = "none";
+			timeLimit = currTime + 10000;
+			assets = [{ text: `Time remaining: ${timeLimit - currTime}`, x: 0, y: maxY*.75, w:maxX, h:0, id: "info", colour: "transparent"}];
+			for (let p of players) {
+				p.status = "DEAD";
+				p.x = maxX*.1; p.w = p.h = Math.min(50,maxY/players.length/5);
+				p.y = maxY*.8 - (maxY*.8 / (players.length+1) * (players.indexOf(p)+1));
+			}
+		}
+		if (gameState == 1) {
+			if (currTime < timeLimit - ((rando.checked) ? Math.random()*5000 : 3000)) {
+				assets[0].text = `Time remaining: ${timeLimit - currTime}`;
+			}
+			else if (currTime - timeLimit > 4000) {
+				assets[0].text = `Time remaining: ${timeLimit - currTime}`;
+				gameState = 2;
+				assets = [{text:`Time's UP!`, x: 0, y: maxY, w:maxX, h:0, id: "info", colour: "transparent"}];
+				assets.push({x:0, w:maxX, y:0, h:maxY*.8, id:"mid", colour: "gold"});
+				assets.push({x:0, w:players[0].w, y:0, h:maxY*.8, id:"early", colour: "red"});
+				assets.push({x:maxX-players[0].w, w:players[0].w, y:0, h:maxY*.8, id:"late", colour: "red"});
+				assets.push({x:maxX/2-players[0].w/2, w:players[0].w, y:0, h:maxY*.8, id:"money", colour: "green"});
+				for (let p of players) {
+					p.status = 0;
+					if (p.score == 0) p.x = maxX-p.w;
+					else {
+						p.score -= timeLimit;
+						p.x = (p.score-1)/3000*(maxX-p.w) + (maxX/2-p.w/2);
+						if (p.score < -1500) p.x = 0;
+						else if (p.score > 1500) p.x = maxX-p.w;
+					}
+					if (p.score != 0) {
+						assets.push({text:p.score, x:p.x, w:p.w, y:p.y-p.h*.5, h:p.h, id:p.id, colour: "transparent", scale:.5});
+						if (Math.abs(p.score) > 1500) assets.at(-1).scale = .25;
+					}
+				}
+				endDisplay();
+
+			}
+			else assets[0].text = ``;
+			for (let p of players) {if (p.pressed != 0 && p.score == 0) p.score = currTime;}
+		}
+	}
+
+	function targetValue() {
+		if (gameState == 0) {
+			gameState = 1;
+			opts.style.display = "none";
+			(rando.checked) ? temp = Math.round(Math.random()*50) : temp = Math.round(Math.random()*250);
+			timeLimit = currTime + 10000;
+			assets = [{text: `Target: ${temp}`, x: 0, y: maxY, w:maxX, h:0, id: "info", colour: "transparent"}];
+			assets.push({x: 0, y: maxY*.9, w:maxX, h:0, id: "info2", colour: "transparent"});
+			for (let p of players) {
+				p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
+				p.y = maxY/3; p.w = Math.min(50,maxX/players.length/5); p.h = p.w;
+				assets.push({text: p.score, x: p.x, y: p.y-p.h, w: p.w, h: p.h, id: `info${p.id}`, colour: "transparent"});
+			}
+		}
+		if (gameState == 1) {
+			let temp2 = Math.ceil(fps/17)
+			assets[1].text = `Time remaining: ${Math.round((timeLimit - currTime)/1000)}s`;
+			for (let p of players) {
+				if (p.pressed != 0) {
+					let temp3 = rando.checked &&  Math.random()>.5
+					temp3 ? p.score -= temp2 : p.score += temp2;
+					assets[players.indexOf(p)+2].text = p.score;
+					assets.push({text: temp3 ? "-1" : "+1", x: p.x, y: p.y, w: p.w, h: p.h, id: `score${assets.length}`, colour: "transparent"});
+				}
+			}
+			for (let a of assets) {
+				if (a.id.includes("info")) continue;
+				a.y += fps/10;
+				a.x += (Math.random()-.5) * fps/10;
+				if (a.y > maxY*.75) assets.splice(assets.indexOf(a), 1);
+			}
+			if (currTime >= timeLimit) {
+				gameState = 2;
+				for (let p of players) {
+					p.w = p.h = Math.min(50,maxY/players.length/5);
+					p.y = maxY*.8 - (maxY*.8 / (players.length+1) * (players.indexOf(p)+1));
+				}
+				assets = [{text:`Target: ${temp}`, x: 0, y: maxY, w:maxX, h:0, id: "info", colour: "transparent"}];
+				assets.push({x:0, w:maxX, y:0, h:maxY*.8, id:"mid", colour: "gold"});
+				assets.push({x:0, w:players[0].w, y:0, h:maxY*.8, id:"early", colour: "red"});
+				assets.push({x:maxX-players[0].w, w:players[0].w, y:0, h:maxY*.8, id:"late", colour: "red"});
+				assets.push({x:maxX/2-players[0].w/2, w:players[0].w, y:0, h:maxY*.8, id:"money", colour: "green"});
+				for (let p of players) {
+					if (p.score == 0) p.x = 0;
+					else {
+						p.score -= temp;
+						p.x = p.score/temp*(maxX-p.w) + (maxX/2-p.w/2);
+						if (p.score < -temp/2) p.x = 0;
+						else if (p.score > temp/2) p.x = maxX-p.w;
+					}
+					if (p.score != 0) {
+						assets.push({text:p.score, x:p.x, w:p.w, y:p.y-p.h*.5, h:p.h, id:p.id, colour: "transparent", scale:.5});
+						if (Math.abs(p.score) > temp/2) assets.at(-1).scale = .25;
+					}
+				}
+				endDisplay();
+			}
+		}
+	}
+
 
 //========================================= Extra Functions ==========================================
 	function simpleCollide(obj1, obj2) {
@@ -2635,7 +2771,7 @@ Try to remove the subzone
 						 background-image: ${a.image ? `url(${a.image})` : "none"};
 						 transform: rotate(${(a.angle != null) ? (-90-a.angle) : 0}deg)
 						 scale(${(a.scale) ? a.scale : 1}) translate(${(a.tX) ? a.tX : 0}px, ${(a.tY) ? a.tY : 0}px);
-						 ;'>${(a.text) ? a.text : ''}</div>`;
+						 ;'>${(a.text != null) ? a.text : ''}</div>`;
 				}
 			}
 			game += "</div>";
@@ -2656,51 +2792,55 @@ Try to remove the subzone
 			canvas.style.height = maxY + "px";
 			ctx = canvas.getContext("2d");
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			for (let a of assets) {
+				ctx.fillStyle = a.colour;
+				ctx.save();
+				if (a.angle != null || a.scale != null || a.tX != null || a.tY != null) {
+					ctx.translate(
+						a.x + a.w / 2 + (a.tX || 0),
+						canvas.height * (1 - a.y / maxY) - a.h / 2 + (a.tY || 0)
+					);
+					if (a.angle != null) {
+						ctx.rotate((-90 - a.angle) * Math.PI / 180);
+					}
+					if (a.scale != null) {
+						ctx.scale(a.scale, a.scale);
+					}
+					ctx.translate(-a.w / 2, -a.h / 2);
+				} else {
+					ctx.translate(a.x, canvas.height * (1 - a.y / maxY) - a.h);
+				}
+				ctx.fillRect(0, 0, a.w, a.h);
+				if (a.text != null) {
+					ctx.fillStyle = "rgb(200,200,200)";
+					ctx.font = `5rem Times New Roman`;
+					let text = ctx.measureText(a.text);
+					ctx.fillText(a.text, (a.w - text.width) / 2, text.actualBoundingBoxAscent + a.h / 2);
+				}
+				ctx.restore();
+			}
 			for (let p of players) {
 				if (p.status == "DEAD") continue;
 				ctx.fillStyle = p.colour;
 				ctx.save();
+				ctx.fillStyle = p.colour;
+				ctx.globalAlpha = (p.status < 0) ? 0.25 : 1;
 				if (p.angle != null) {
 					ctx.translate(p.x + p.w / 2, canvas.height * (1 - p.y / maxY) - p.h / 2);
-					ctx.rotate((-90-p.angle) * Math.PI / 180);
-					ctx.globalAlpha = (p.status < 0) ? 0.25 : 1;
+					ctx.rotate((-90 - p.angle) * Math.PI / 180);
 					ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-					ctx.fillStyle = "rgb(200,200,200)";
-					ctx.font = `${Math.min(p.w, p.h)}px Times New Roman"`;
-					let text = ctx.measureText(p.id);
-					ctx.fillText(p.id, -p.w / 2 + (p.w-text.width)/2, text.actualBoundingBoxAscent+p.h);
 				} else {
-					ctx.globalAlpha = (p.status < 0) ? 0.25 : 1;
-					ctx.fillRect(p.x, canvas.height*(1-p.y/maxY)-p.h, p.w, p.h);
+					ctx.fillRect(p.x, canvas.height * (1 - p.y / maxY) - p.h, p.w, p.h);
+				}
+				if (p.id != null) {
 					ctx.fillStyle = "rgb(200,200,200)";
 					ctx.font = `${Math.min(p.w, p.h)}px Times New Roman`;
 					let text = ctx.measureText(p.id);
-					ctx.fillText(p.id, p.x+(p.w-text.width)/2, canvas.height*(1-p.y/maxY)-p.h/2+text.actualBoundingBoxAscent/2);
-				}
-				ctx.restore();
-			}
-			for (let a of assets) {
-				ctx.fillStyle = a.colour;
-				ctx.save();
-				if (a.angle != null) {
-					ctx.translate(a.x + a.w / 2, canvas.height * (1 - a.y / maxY) - a.h / 2);
-					ctx.rotate((-90-a.angle) * Math.PI / 180);
-					ctx.fillRect(-a.w / 2, -a.h / 2, a.w, a.h);
-					if (a.text != null) {
-						ctx.fillStyle = "rgb(200,200,200)";
-						ctx.font = `5rem Times New Roman`;
-						let text = ctx.measureText(a.text);
-						ctx.fillText(a.text, -a.w / 2 + (a.w-text.width)/2, text.actualBoundingBoxAscent+a.h);
-					}
-				}
-				else {
-					ctx.fillRect(a.x, canvas.height * (1 - a.y / maxY) - a.h, a.w, a.h);
-					if (a.text != null) {
-						ctx.fillStyle = "rgb(200,200,200)";
-						ctx.font = `5rem Times New Roman`;
-						let text = ctx.measureText(a.text);
-						ctx.fillText(a.text, a.x+(a.w-text.width)/2, canvas.height*(1-a.y/maxY)-a.h+text.actualBoundingBoxAscent);
-					}
+					ctx.fillText(
+						p.id,
+						(p.angle != null ? -p.w / 2 : p.x) + (p.w - text.width) / 2,
+						(p.angle != null ? text.actualBoundingBoxAscent : canvas.height * (1 - p.y / maxY) - p.h / 2) + text.actualBoundingBoxAscent / 2
+					);
 				}
 				ctx.restore();
 			}
@@ -2723,6 +2863,7 @@ Try to remove the subzone
 				if (!playerDiv) {
 					gZone.firstChild.innerHTML += `<div id=p${p.id} style='position: absolute; z-index: ${i};'>${p.id}</div>`;
 					playerDiv = document.getElementById(`p${p.id}`);
+					playerDiv.style.zIndex = i + 1;
 				}
 				if (p.status == "DEAD") playerDiv.style.display = "none";
 				else playerDiv.style.display = "";
@@ -2752,7 +2893,8 @@ Try to remove the subzone
 				assetDiv.style.left = a.x + "px";
 				assetDiv.style.width = a.w + "px";
 				assetDiv.style.height = a.h + "px";
-				assetDiv.style.transform = `rotate(${(a.angle != null) ? (-90-a.angle) : 0}deg)`;
+				assetDiv.style.transform = `rotate(${(a.angle != null) ? (-90-a.angle) : 0}deg) 
+					scale(${(a.scale) ? a.scale : 1}) translate(${(a.tX) ? a.tX : 0}px, ${(a.tY) ? a.tY : 0}px)`;
 				assetDiv.innerHTML = (a.text) ? a.text : '';
 			}
 		}
@@ -2783,14 +2925,32 @@ Try to remove the subzone
 		else tempcanvas.height = maxYc - minY;
 		let scale = Math.min(tempcanvas.width / (maxXc - minX), tempcanvas.height / (maxYc - minY));
 		for (let a of assets) {
+			ctx.save();
+			let tx = (a.x - minX) * scale + (a.tX || 0);
+			let ty = tempcanvas.height - ((a.y - minY + a.h) * scale) + (a.tY || 0);
+			ctx.translate(tx + (a.w * scale) / 2, ty + (a.h * scale) / 2);
+			if (a.angle != null) {
+				ctx.rotate((-90 - a.angle) * Math.PI / 180);
+			}
+			if (a.scale != null) {
+				ctx.scale(a.scale, a.scale);
+			}
+			ctx.translate(-(a.w * scale) / 2, -(a.h * scale) / 2);
+
 			ctx.fillStyle = a.colour;
-			ctx.fillRect((a.x-minX) * scale,tempcanvas.height - ((a.y-minY+a.h) * scale),a.w * scale,a.h * scale);
-			if (a.text != null) {
+			ctx.fillRect(0, 0, a.w * scale, a.h * scale);
+
+		 if (a.text != null) {
 				ctx.fillStyle = "rgb(200,200,200)";
 				ctx.font = `5rem Times New Roman`;
 				let text = ctx.measureText(a.text);
-				ctx.fillText(a.text, (a.x-minX) * scale + (a.w*scale-text.width)/2, tempcanvas.height - ((a.y-minY+a.h*.75) * scale) + text.actualBoundingBoxAscent);
+				ctx.fillText(
+					a.text,
+					(a.w * scale - text.width) / 2,
+					(a.h * scale) * 0.75 + text.actualBoundingBoxAscent
+				);
 			}
+			ctx.restore();
 		}
 		for (let p of players) {
 			ctx.fillStyle = p.colour;
