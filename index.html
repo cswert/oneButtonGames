@@ -137,25 +137,23 @@ Use "npm i -g http-server" and "http-server" for codespace port
 				<option>Final Countdown</option>
 				<option>Target Value</option>
 				<option>Simon Says</option>
+				<option>Hot Potato</option>
+				<option>Robin Hood</option>
 				<option>Red Light Green Light</option>
 				<option>Flappy Bird</option>
 				<option>Frogger</option>
 				<option>Platformer</option>
 				<option>Kitten Canon</option>
+				<option>DVD Logos</option>
 				<option>Pong</option>
 
 				<option>PT Audiometry</option>
 				<option>Rythm Game</option>
-				<option>Hot Potato</option>
-				<option>Hot Potato V2</option>
-				<option>Robin Hood</option>
-				<option>The Giver</option>
 				<option>PEMDAS</option>
 				<option>Hill Climb Racing</option>
 				<option>Langton Snake</option>
 				<option>TP Unroll</option>
 				<option>Lock Picking</option>
-				<option>DVD Logos</option>
 				<option>Skill Stop Jackpot</option>
 				<option>Bowling Sorta</option>
 				<option>Kahoot</option>
@@ -381,7 +379,7 @@ Try to remove the subzone
 		//fun mode is the players become the chairs and have to run
 	}
 
-	// assets = [{ text:``, x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
+	// assets = [{text:``, x: 0, y: maxY/2, w:maxX, h:0, id: "info", colour: "transparent"}];
 	// opts.style.display = "none";
 	// for (let p of players) {
 	// 	p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
@@ -563,245 +561,6 @@ Try to remove the subzone
 			gZone.innerHTML = "That concludes the questionaire.<br>" + displayPlayersTable('score');
 			sZone.innerHTML = "";
 			gameState = 5;
-		}
-	}
-
-	function hotPotato() {
-		if (gameState == 0) {
-			temp = Math.floor(Math.random() * players.length);
-			players[temp].status = "&#129364";
-			timeLimit = (rando.checked ? Math.random() * 7000 : 4000) + currTime;
-			gameState = 1;
-		}
-		if (gameState == 1) {
-			gZone.innerHTML = `Time remaining: ${Math.round((timeLimit-currTime)/1000)}s<br><br>`;
-			let pcount = 0;
-			for (let p of players) {
-				if (p.status == "Dead") continue;
-				if (pcount == temp && p.pressed == currTime) {
-					if (rando.checked) {
-						while (true) {
-							temp = Math.floor(Math.random() * players.length);
-							if (players[temp].status == "") break;
-						}
-					}
-					else {
-						for (let j in players) {
-							if (players[(parseInt(pcount) + parseInt(j)) % players.length].status == "") {
-								temp = (parseInt(pcount) + parseInt(j)) % players.length;
-								break	;
-							}
-						}
-					}
-					p.status = "";
-					players[temp].status = "&#129364";
-				}
-				else if (p.pressed == currTime) p.score--;
-				else if (pcount == temp && timeLimit-currTime < 1000) p.score += fps/1000;
-				pcount++;
-			}
-			sZone.innerHTML = displayPlayersTable('status');
-			if (currTime >= timeLimit) {
-				timeLimit = currTime + 3000;
-				gameState = 2;
-				gZone.innerHTML = `BOOM! Player ${players[temp].id} is out!<br><br>`;
-				sZone.inenerHTML = displayPlayersTable('score');
-			}
-		}
-		if (gameState == 2) {
-			let temp2 = (players.filter(p => p.status != 'Dead').length > 1) ? true : false;
-			if (currTime >= timeLimit && temp2) {
-				players[temp].status = "Dead";
-				for (let p of players) {if (p.status != "Dead") p.status = "";}
-				if (rando.checked) {
-					while (true) {
-						temp = Math.floor(Math.random() * players.length);
-						if (players[temp].status == "") break;
-					}
-				}
-				else {
-					for (let j in players) {
-						if (players[(temp + parseInt(j)) % players.length].status == "") {
-							temp = (temp + parseInt(j)) % players.length;
-							break	;
-						}
-					}
-				}
-				players[temp].status = "&#129364";
-				timeLimit = (rando.checked ? Math.random() * 7000 : 3000) + currTime;;
-				gameState = 1;
-			}
-			if (!temp2) {
-				gameState = 3
-				gZone.innerHTML = `Player ${players[temp].id} is winenr!<br>`;
-			}
-		}
-	}
-
-	function hotPotatoV2() {
-		if (gameState == 0) {
-			for (let p of players) {p.score = 25;}
-			temp = Math.floor(Math.random() * players.length);
-			players[temp].status = "&#129364";
-			startTime = currTime;
-			gameState = 1;
-		}
-		if (gameState == 1) {
-			gZone.innerHTML = "Pass before you get burnt!<br><br>"
-			if (rando.checked) sZone.innerHTML = "";
-			else sZone.innerHTML = displayPlayersTable('status');
-			let pcount = 0;
-			for (let p of players) {
-				if (p.status == "Dead") continue;
-				if (pcount == temp && p.pressed == currTime) {
-					if (rando.checked) {
-						while (true) {
-							temp = Math.floor(Math.random() * players.length);
-							if (players[temp].status == "") break;
-						}
-					}
-					else {
-						for (let j in players) {
-							if (players[(parseInt(pcount) + parseInt(j)) % players.length].status == "") {
-								temp = (parseInt(pcount) + parseInt(j)) % players.length;
-								break	;
-							}
-						}
-					}
-					p.status = "";
-					players[temp].status = "&#129364";
-					startTime = currTime;
-				}
-				else if (pcount == temp && (currTime-startTime) % Math.round(fps) == 0) {
-					p.score -= rando.checked ? Math.floor(Math.random()*7) : 3;
-				}
-				else if (p.pressed == currTime) p.score -= 5;
-				if (p.score <= 0) {
-					timeLimit = currTime + 3000;
-					gameState = 2;
-					gZone.innerHTML = `BOOM! Player ${p.id} is out!<br><br>`;
-					p.status = "Dead";
-					p.score = "Dead";
-					sZone.innerHTML = displayPlayersTable('score');
-					for (let p of players) {
-						if (p.status == "&#129364") p.status = "";
-					}
-				}
-				pcount++;
-			}
-		}
-		if (gameState == 2) {
-			let temp2 = (players.filter(p => p.status != 'Dead').length > 1) ? true : false;
-			if (currTime >= timeLimit && temp2) {
-				for (let p of players) {if (p.status != "Dead") p.status = "";}
-				gameState = 1;
-				if (rando.checked) {
-					while (true) {
-						temp = Math.floor(Math.random() * players.length);
-						if (players[temp].status == "") break;
-					}
-				}
-				else {
-					for (let j in players) {
-						if (players[(temp + parseInt(j)) % players.length].status == "") {
-							temp = (temp + parseInt(j)) % players.length;
-							break	;
-						}
-					}
-				}
-				players[temp].status = "&#129364";
-			}
-			if (!temp2) {
-				gameState = 3
-				for (let p of players) {
-					if (p.status != "Dead") gZone.innerHTML = `Player ${players[temp].id} is the winner!<br><br>`;
-				}
-			}
-		}
-	}
-
-	function theGiver() {
-		//start with x points, points are given to a random player while holding a button
-		if (gameState == 0) {
-			for (let p of players) {p.score = 100;}
-			gameState = 1;
-		}
-		if (gameState == 1) {
-			gZone.innerHTML = `Try to reach zero.<br><br>`;
-			let pcount = 0;
-			for (let p of players) {
-				if (p.score == 0) {
-					temp = p.id;
-					gameState = 2;
-				}
-				if (p.pressed != 0) {
-					(rando.checked && Math.random() > .55) ? p.score++ : p.score--;
-					if (rando.checked) players[Math.floor(Math.random() * players.length)].score++;
-					else players[(parseInt(pcount) + 1) % players.length].score++;
-				}
-				pcount++;
-			}
-			gZone.innerHTML += displayPlayersTable("score");
-		}
-		if (gameState == 2) {
-			gameState = 3;
-			gZone.innerHTML = `Player ${temp} reached zero.<br><br>`;
-			gZone.innerHTML += displayPlayersTable("score");
-		}
-	}
-
-	function robinHood() {
-		//start with x points, the playerwih the least points can steal, but more stolen = high chance to get caught
-		if (gameState == 0) {
-			for (let p of players) p.score = p.score = Math.round(Math.random()*100)+50;
-			gameState = 1;
-		}
-		if (gameState == 1) {
-			gZone.innerHTML = `Try to steal, don't get caught!<br><br>`;
-			temp = minMaxScore();
-			let pcount = 0;
-			for (let p of players) {
-				if (p.score > 0) {
-					if (p.pressed != 0 && pcount == temp[0]) p.status++;
-					else {
-						if (p.status > 0) {
-							if ((rando.checked && Math.random() > Math.random()) ||
-							 	!rando.checked && Math.random() > p.status/(p.status + players[temp[1]].score)) {
-								players[temp[1]].score -= p.status;
-								let temp2 = [];
-								for (let j in players) {
-									if (players[j].score != "CAUGHT!" && players[j].score != "BROKE!"&& j != temp[1]) temp2.push(j);
-								}
-								for (let j in temp2) {
-									players[temp2[j]].score += Math.round(p.status/temp2.length);
-								}
-							}
-							else p.score = "CAUGHT!";
-						}
-						p.status = 0;
-					}
-				}
-				else if (p.score != "CAUGHT!") p.score = "BROKE"
-				pcount ++;
-			}
-			gZone.innerHTML += displayPlayersTable("score");
-			sZone.innerHTML = `<br>Heist score: ${players[temp[0]].status}`
-			document.querySelectorAll("td").forEach(x => {
-				if (x.innerHTML.includes(`Player ${temp[0]}:`)) x.style.background = "green";
-				if (x.innerHTML.includes(`Player ${temp[1]}:`)) x.style.background = "darkgoldenrod";
-				if (x.innerHTML.includes(`CAUGHT`) || x.innerHTML.includes(`BROKE`)) x.style.background = "red";
-			});
-			if (players.filter(p => !isNaN(p.score)).length == 1) gameState = 2;
-		}
-		if (gameState == 2) {
-			gameState = 3;
-			gZone.innerHTML = `Player ${temp[1]} hoodwinked everyone.<br><br>`;
-			gZone.innerHTML += displayPlayersTable("score");
-			document.querySelectorAll("td").forEach(x => {
-				if (x.innerHTML.includes(`Player ${temp[1]}:`)) x.style.background = "green";
-				else x.style.background = "red";
-			});
-			sZone.innerHTML = "";
 		}
 	}
 
@@ -1002,7 +761,7 @@ Try to remove the subzone
 					if (p.score >= p.loose && p.score > 0) {
 						p.loose -= (rando.checked) ? Math.random()*5 : 5;
 						p.remain -= (rando.checked) ? Math.random()*3 : 1;
-						if (Math.random() < (rando.checked ? 0.075 : 0.025)) { //chance to rip
+						if (Math.random() < (rando.checked ? 0.075 : 0.025)) {//chance to rip
 							p.loose += Math.random()*(parseFloat(sZone.offsetHeight)-40-p.loose);
 						}
 						if (p.remain < 0) {
@@ -1188,99 +947,6 @@ Try to remove the subzone
 				temp2 +=  `<div style='background:green; position:absolute; left:${temp[i].x1}; width:${temp[i].x2}; bottom:0; height: ${temp[i].y2}%'>&nbsp;</div>`;
 			}
 			sZone.innerHTML = temp2;
-		}
-	}
-
-	function dvdLogos() {
-		if (gameState == 0) {
-			gameState = 1;
-			temp = [];
-			for (let p of players) {
-				p.status = [0,0,0];
-				p.score = [0,window.innerHeight*.35];
-			}
-			gZone.style.width = window.innerWidth*.9;
-			gZone.style.height = window.innerHeight*.7;
-			gZone.style.position = "relative";
-			gZone.style.border = "solid 1px";
-			gZone.style.justifySelf = "center";
-			gZone.innerHTML = "";
-			sZone.innerHTML = "";
-		}
-		if (gameState == 1) {
-			let game = "";
-			for (let p of players) {
-				switch (p.status[0]) {
-					case 0: p.score[0] += 10; break;
-					case 1: p.score[0] -= 10; break;
-					case 2: p.score[1] += 10; break;
-					case 3: p.score[1] -= 10; break;
-					case 4: p.status[1] += 10; break;
-					case 5: p.status[1] -= 10; break;
-					case 6: p.status[2] += 1; break;
-					case 7: p.status[2] -= 1; break;
-				}
-				if (p.status[0] < 8) {
-					if (p.pressed == currTime) p.status[0] += 2;
-					if (p.score[0] > (window.innerWidth*.9)-50 || p.score[1] > (window.innerHeight*.7)-50 || 
-						p.status[2] > 10) p.status[0]++;
-					else if (p.score[0] < 0 || p.score[1] < 0 || p.status[2] < 0) p.status[0]--;
-				}
-				else {
-					if (p.status[0] < 10) {
-						p.status[0] = 10;
-						let temp2 = [0,0];
-						p.status[1] *= Math.PI/180;
-						temp2[0] = Math.cos(p.status[1])*p.status[2];
-						temp2[1] = Math.sin(p.status[1])*p.status[2];
-						p.status[1] = temp2[0];
-						p.status[2] = temp2[1];
-					}
-					p.score[0] += p.status[1];
-					p.score[1] += p.status[2];
-					let temp2 = 0;
-					if (p.score[0] > (window.innerWidth*.9)-50 || p.score[0] < 0) {
-						p.status[1] *= -1;
-						if (rando.checked) p.status[1] *= (Math.random()*2)+.2;
-						if (p.status[1] > 25) p.status[1] = 20;
-						temp2++;
-					}
-					if (p.score[1] > (window.innerHeight*.7)-50 || p.score[1] < 0) {
-						p.status[2] *= -1;
-						if (rando.checked) p.status[2] *= (Math.random()*2)+.2;
-						if (p.status[1] > 25) p.status[2] = 20;
-						temp2++;
-					}
-					if (temp2 == 2) {
-						gameState = 2;
-						temp.push(p.id);
-					}
-				}
-				if ([4,5].includes(p.status[0])) {
-					game += `<div style='background:${p.colour}; width:50; height:50; 
-						position:absolute; left:${p.score[0]}; bottom:${p.score[1]}'>
-						<div style='background:red; width:5; height:25; position:absolute;
-					   justify-self: anchor-center; transform-origin:bottom center; 
-						transform: rotate(${p.status[1]}deg)'>&nbsp;</div>${p.id}</div>`;
-				}
-				else if ([6,7].includes(p.status[0])) {
-					game += `<div style='background:${p.colour}; width:50; height:50; 
-						position:absolute; left:${p.score[0]}; bottom:${p.score[1]}'>
-						<div style='background:red; width:50; height:5; position:absolute;
-					   bottom:${p.status[2]*10}%'>&nbsp;</div>${p.id}</div>`;
-				}
-				else {
-					game += `<div style='background:${p.colour}; width:50; height:50; 
-						position:absolute; left:${p.score[0]}; bottom:${p.score[1]}'>${p.id}</div>`;
-				}
-			}
-			gZone.innerHTML = game;
-			if (temp.length > 0) {
-				gameState = 2;
-				sZone.innerHTML = `Player${(temp.lengh>1)?"s":""} ${temp.join(", ")} hit the corner`;
-				sZone.style.position = "fixed";
-				sZone.style.placeSelf = "anchor-center";
-			}
 		}
 	}
 
@@ -1724,7 +1390,7 @@ Try to remove the subzone
 			timeLimit = startTime + Math.round(Math.random()*cy.value);
 			gameState = 1;
 			temp = currTime;
-			assets = [{ text:"GO!", x: maxX/4, y: maxY/4, w:maxX/2, h:maxY/2, id: "light", colour: "green"}];
+			assets = [{text:"GO!", x: maxX/4, y: maxY/4, w:maxX/2, h:maxY/2, id: "light", colour: "green"}];
 			for (let p of players) {
 				p.y = maxY - (maxY / (players.length+1) * (players.indexOf(p)+1));
 				p.x = 0; p.h = Math.min(50,maxY/players.length/5); p.w = p.h;
@@ -1830,12 +1496,12 @@ Try to remove the subzone
 					<br> Volume: <input type=range id=gn value=1 min=0 max=1 step=0.1>`;
 			}
 			gameState = 0.5;
-			assets = [{ text: ``, x: 0, y: maxY/2, w:maxX, h:0, id: "win", colour: "transparent"}];
+			assets = [{text: ``, x: 0, y: maxY/2, w:maxX, h:0, id: "win", colour: "transparent"}];
 			for (let p of players) {
 				p.score = "";
 				p.y = maxY - (maxY / (players.length+1) * (players.indexOf(p)+1));
 				p.x = maxX*.2; p.h = Math.min(50,maxY/players.length/5); p.w = p.h;
-				assets.push({ text:"", x: maxX*.25, y: p.y, w:0, h:p.h, id: `p${players.indexOf(p)}`, colour: "transparent"});
+				assets.push({text:"", x: maxX*.25, y: p.y, w:0, h:p.h, id: `p${players.indexOf(p)}`, colour: "transparent"});
 			}
 			timeLimit = currTime + 3000;
 		}
@@ -2144,7 +1810,7 @@ Try to remove the subzone
 			}
 		}
 		if (gameState == 1) {
-			assets = [{ text:`Set your angle: ${Math.ceil((timeLimit - currTime)/1000)}`,
+			assets = [{text:`Set your angle: ${Math.ceil((timeLimit - currTime)/1000)}`,
 				x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
 			assets.push({x: maxX*.1, y: maxY*.1, w: maxX*.8, h: maxY*.8, id: "box", colour: "gray"});
 			assets.push({text: "0 deg", x: 0, y: maxY*.05, w: maxX*.2, h: maxY*.05, id: "min", colour: "transparent"});
@@ -2200,7 +1866,7 @@ Try to remove the subzone
 			}
 			assets = [{text: Math.round(maxPX/10), x: 0, y: maxY, w: maxX, h: 0, id: "score", colour: "transparent"}];
 			for (let t of temp) {
-				let copy = { ...t };
+				let copy = {...t };
 				assets.push(copy);
 				if (alivePlayers.length != 1) {
 					assets[assets.length-1].x = (assets[assets.length-1].x - minX) * scale;
@@ -2294,7 +1960,7 @@ Try to remove the subzone
 			if (rando.checked) temp = (Math.random() < .5) ? 0 : 1;
 		}
 		if (gameState == 1) {
-			assets = [{ text:`Were you picked? ${Math.ceil((timeLimit-currTime)/1000)}`,
+			assets = [{text:`Were you picked? ${Math.ceil((timeLimit-currTime)/1000)}`,
 				x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
 			for (let p of players) {
 				if (p.pressed == currTime && p.status != "DEAD") {
@@ -2317,7 +1983,7 @@ Try to remove the subzone
 			}
 		}
 		if (gameState == 2) {
-			assets = [{ text:`Farewell to the fallen ${Math.ceil((timeLimit-currTime)/1000)}`,
+			assets = [{text:`Farewell to the fallen ${Math.ceil((timeLimit-currTime)/1000)}`,
 				x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
 			let alivePlayers = players.filter(p => p.status != "DEAD" && p.status != -1);
 			if (currTime >= timeLimit && alivePlayers.length > 0) {
@@ -2375,7 +2041,7 @@ Try to remove the subzone
 		}
 		if (gameState == 2) {
 			if (currTime < timeLimit) {
-				assets = [{ text:`Place your guess now! ${Math.round((timeLimit-currTime)/1000)}`,
+				assets = [{text:`Place your guess now! ${Math.round((timeLimit-currTime)/1000)}`,
 					x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
 				for (let p of players) {
 					if (p.pressed == currTime) p.score++;
@@ -2427,7 +2093,7 @@ Try to remove the subzone
 			timeLimit = currTime + 5000;
 			gameState = 1;
 			temp = Math.round(Math.random()*3);
-			assets = [{ text:temp2[temp], x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
+			assets = [{text:temp2[temp], x: 0, y: maxY/2, w:maxX, h:maxY/2, id: "info", colour: "transparent"}];
 			if (rando.checked) assets[0].text = temp2[temp].split(" ").sort(() => Math.random() - 0.5).join(" ");
 			for (let p of players) {
 				p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
@@ -2454,7 +2120,7 @@ Try to remove the subzone
 				gameState = (temp3) ? 1 : 2;
 				if (gameState == 2) {
 					assets[0].text = "GAME OVER! Rounds obeyed:";
-					assets.push({ text:`Player ${minMaxScore()[1].join(", ")} was da best`, x: 0, y: maxY/3, w:maxX, h:maxY/2, id: "win", colour: "transparent"});
+					assets.push({text:`Player ${minMaxScore()[1].join(", ")} was da best`, x: 0, y: maxY/3, w:maxX, h:maxY/2, id: "win", colour: "transparent"});
 					for (let p of players) {
 						p.y = maxY/3;
 						assets.push({text: p.score, x:p.x, y:(maxY/3)+p.h, w:p.w, h:p.h*.99, id:`score${p.id}`, colour:"transparent"});
@@ -2510,7 +2176,7 @@ Try to remove the subzone
 			gameState = 1;
 			opts.style.display = "none";
 			timeLimit = currTime + 10000;
-			assets = [{ text: `Time remaining: ${timeLimit - currTime}`, x: 0, y: maxY*.75, w:maxX, h:0, id: "info", colour: "transparent"}];
+			assets = [{text: `Time remaining: ${timeLimit - currTime}`, x: 0, y: maxY*.75, w:maxX, h:0, id: "info", colour: "transparent"}];
 			for (let p of players) {
 				p.status = "DEAD";
 				p.x = maxX*.1; p.w = p.h = Math.min(50,maxY/players.length/5);
@@ -2607,6 +2273,253 @@ Try to remove the subzone
 					}
 				}
 				endDisplay();
+			}
+		}
+	}
+
+	function hotPotato() {
+		let radius = Math.min(maxX, maxY) / 3;
+		if (gameState == 0) {
+			if (temp == []) temp = Math.floor(Math.random() * players.length);
+			if (!options.innerHTML.includes("Health")) {
+				options.innerHTML = `Player Health: <input type=range id=ph value=25 min=5 max=100>
+				<br>Round Time: <input type=range id=tm value=10000 min=1000 max=15000>`;
+			}
+			players[temp].status = 1;
+			timeLimit = (rando.checked ? Math.random() * 10000 : 1*tm.value) + currTime;
+			setPlayerAngles();
+			for (let p of players) {
+				p.w = p.h = 50;
+				p.x = radius * Math.cos(p.angle*Math.PI/180) + maxX/2 - p.w/2;
+				p.y = radius * Math.sin(p.angle*Math.PI/180) + maxY/2 - p.h/2;
+				p.score = 1*ph.value;
+			}
+			assets = [{text:``, x: 0, y: maxY/2, w:maxX, h:0, id: "info", colour: "transparent"}];
+			assets.push({w:25, h:25, id: "potato", colour: "brown",
+				x: radius*.7 * Math.cos(players[temp].angle*Math.PI/180) + maxX/2,
+				y: radius*.7 * Math.sin(players[temp].angle*Math.PI/180) + maxY/2
+			});
+			gameState = 1;
+		}
+		if (gameState == 1) {
+			assets[0].text = Math.round((timeLimit-currTime)/1000);
+			assets[1].x = radius*.7 * Math.cos(players[temp].angle*Math.PI/180) + maxX/2;
+			assets[1].y = radius*.7 * Math.sin(players[temp].angle*Math.PI/180) + maxY/2;
+			for (let [i,p] of players.entries()) {
+				if (p.status == "DEAD") continue;
+				if (p.pressed == currTime) {
+					if (i == temp) {
+						if (rando.checked) {
+							while (true) {
+								temp = Math.floor(Math.random() * players.length);
+								if (players[temp].status == 0) break;
+							}
+						}
+						else {
+							for (let j in players) {
+								temp = (1*i + 1*j) % players.length;
+								if (players[temp].status == 0) break;
+							}
+						}
+						p.status = 0;
+						players[temp].status = 1;
+					}
+					else p.score -= 5;
+				}
+				else if (i == temp) p.score -= fps/100;
+				if (p.score <= 0) {
+					p.status = "DEAD";
+					timeLimit = currTime + 3000;
+					gameState = 2;
+				}
+			}
+			if (currTime >= timeLimit) {
+				timeLimit = currTime + 3000;
+				gameState = 2;
+				assets[0].text = `BOOM! ${players[temp].id} is out!`;
+				players[temp].status = "DEAD";
+			}
+		}
+		if (gameState == 2) {
+			assets[0].text = `Pause ${Math.round((timeLimit-currTime)/1000)}s`;
+			let alivePlayers = players.filter(p => p.status != 'DEAD');
+			if (currTime >= timeLimit && alivePlayers.length > 1) {
+				for (let p of players) {if (p.status != "DEAD") p.status = 0;}
+				if (rando.checked) {
+					while (true) {
+						temp = Math.floor(Math.random() * players.length);
+						if (players[temp].status == 0) break;
+					}
+				}
+				else {
+					for (let j in players) {
+						if (temp == j) continue;
+						temp = (temp + parseInt(j)) % players.length;
+						if (players[temp].status == 0) break;
+					}
+				}
+				players[temp].status = 1;
+				timeLimit = (rando.checked ? Math.random() * 10000 : 1*tm.value) + currTime;
+				gameState = 0;
+			}
+			else if (alivePlayers.length == 1) {
+				gameState = 3
+				assets[0].text = `Player ${alivePlayers[0].id} is winner!`;
+				assets[0].y = maxY*.8;
+				assets.pop();
+			}
+		}
+	}
+
+	function robinHood() {
+		if (gameState == 0) {
+			if (!options.innerHTML.includes("Max")) {
+				options.innerHTML = `Start Score: <input type=number id=ss value=100 min=1 max=1000>
+				<br>Max Heist: <input type=number id=mh value=100 min=1 max=1000>
+				<br>Catch chance: <input type=range id=cc value=25 min=1 max=100>
+				<br>Tax Rate: <input type=range id=tr value=.6 min=.1 max=1 step=.01>`;
+			}
+			assets = [{text:`Try to steal, don't get caught!`, x: 0, y: maxY, w:maxX, h:0, id: "info", colour: "transparent"}];
+			assets.push({x: maxX*.85-50, y: maxY/2, w:100, h:100, id: "robin", colour: "transparent"});
+			assets.push({text: "Heist Value: 0",x: maxX*.7, y: maxY/2, w:maxX*.3, h:0, id: "heist", colour: "transparent"});
+			setPlayerGrid(-1,-1,0,0,maxX*.7,maxY);
+			for (let p of players) {
+				p.score = Math.round(Math.random()*ss.value)+50;
+				p.w = p.h = 50;
+				p.status = 0;
+				assets.push({text:p.score, x: p.x, y: p.y-p.h, w: p.w, h: p.h, id: `p${p.id}`, colour: "transparent"});
+			}
+			gameState = 1;
+		}
+		if (gameState == 1) {
+			temp = minMaxScore();
+			temp.push(0);
+			for (let p of players) {
+				if (p.id == temp[0][0] || (rando.checked && p.id != temp[1][0])) {
+					assets[1].colour = p.colour;
+					assets[1].text = p.id;
+					if (p.pressed != 0) {
+						p.status += Math.round(fps/10);
+						if (p.status > 1*mh.value) p.status = 1*mh.value;
+						temp[2] += p.status;
+						if (Math.random()*p.status/100 > Math.random()*p.status) {
+							p.status = -1;
+							p.score = "CAUGHT!";
+							assets[3+players.indexOf(p)].scale = .5;
+						}
+					}
+					else if (p.status > 0) {
+						assets[2].text = `Heist Value: 0`;
+						let alivePlayers = players.filter(p => p.status != -1);
+						for (let l of alivePlayers) {
+							if (l.id == temp[1][0]) l.score -= p.status;
+							if (l.id != temp[1][0]) l.score += Math.round(p.status/(alivePlayers.length-1)*tr.value);
+						}
+						p.status = 0;
+					}
+				}
+				if (p.score < 0) {
+					p.status = -1;
+					p.score = "BROKE!";
+					assets[3+players.indexOf(p)].scale = .5;
+				}
+				assets[3+players.indexOf(p)].text = p.score;
+			}
+			assets[2].text = `Heist Value: ${temp[2]}`;
+			if (players.filter(p => !isNaN(p.score)).length == 1) gameState = 2;
+		}
+		if (gameState == 2) {
+			gameState = 3;
+			let alivePlayers = players.filter(p => p.status != -1);
+			assets[0].text = `Player ${alivePlayers[0].id} hoodwinked everyone`;
+			assets[1].colour = alivePlayers[0].colour;
+			assets[1].text = alivePlayers[0].id;
+			assets[2].text = "Winner";
+		}
+	}
+
+	function dvdLogos() {
+		if (gameState == 0) {
+			temp = [];
+			gameState = 1;
+			for (let p of players) {p.x = 0; p.y = maxY/2; p.w = p.h = 50; p.ang = 0;}
+		}
+		if (gameState == 1) {
+			assets = [{x: 0, y: maxY/2, w:maxX, h:0, id: "info", colour: "transparent"}];
+			for (let p of players) {
+				switch (p.status) {
+					case 0: p.x += 10*(fps/17); break;
+					case 1: p.x -= 10*(fps/17); break;
+					case 2: p.y += 10*(fps/17); break;
+					case 3: p.y -= 10*(fps/17); break;
+					case 4: p.ang += 10*(fps/17); break;
+					case 5: p.ang += 10*(fps/17); break;
+					case 6: p.score += 1*(fps/17); break;
+					case 7: p.score -= 1*(fps/17); break;
+				}
+				if (p.status < 8) {
+					if (p.pressed == currTime) p.status += 2;
+					if (p.x > maxX-p.w || p.y > maxY-p.h || p.score > p.h) p.status++;
+					else if (p.x < 0 || p.y < 0 || p.score < 0) p.status--;
+					if (p.status > 3) {
+						assets.push({
+							text:"↓", x:p.x+(p.h/2), y:p.y+(p.h/2), w:5, h:5, id: `ang${p.id}`, colour:"red", angle: p.ang
+						});
+					}
+					if (p.status > 5) {
+						assets.push({
+							x:p.x-(p.h*.1), y:p.y+p.score, w:p.w*1.2, h:p.h*.1, id: `pow${p.id}`, colour:"red"
+						});
+					}
+				}
+				else {
+					if (p.status < 10) {
+						p.status = 10;
+						let temp2 = [0,0];
+						while (p.ang < 0) p.ang += 360;
+						p.ang *= Math.PI/180;
+						p.score = 10;
+						temp2[0] = Math.cos(p.ang)*p.score;
+						temp2[1] = Math.sin(p.ang)*p.score;
+						p.score = [...temp2];
+					}
+					if (rando.checked) {
+						for (let l of players) {
+							if (l.id == p.id || l.status < 10) continue;
+							if (simpleCollide(p,l)) {
+								let temp2 = [Math.atan2(p.score[1], p.score[0]),Math.sqrt(p.score[0]**2 + p.score[1]**2)];
+								let temp3 = [Math.atan2(l.score[1], l.score[0]),Math.sqrt(l.score[0]**2 + l.score[1]**2)];
+								p.score[0] = temp2[1] * Math.cos(temp2[0] + Math.PI - temp3[0]);
+								p.score[1] = temp2[1] * Math.sin(temp2[0] + Math.PI - temp3[0]);
+								l.score[0] = temp3[1] * Math.cos(temp3[0] + Math.PI - temp2[0]);
+								l.score[1] = temp3[1] * Math.sin(temp3[0] + Math.PI - temp2[0]);
+
+							}
+						}
+					}
+					p.x += p.score[0]*(fps/17);
+					p.y += p.score[1]*(fps/17);
+					let hitX = false, hitY = false;
+					if (p.x > maxX - p.w || p.x < 0) {
+						if (p.x > maxX - p.w) p.x = maxX - p.w;
+						else p.x = 0;
+						p.score[0] *= -1;
+						if (rando.checked) p.score[0] += (Math.random()-.5)*10;
+						hitX = true;
+					}
+					if (p.y > maxY - p.h || p.y < 0) {
+						if (p.y > maxY - p.h) p.y = maxY - p.h;
+						else p.y = 0;
+						p.score[1] *= -1;
+						if (rando.checked) p.score[1] += (Math.random()-.5)*10;
+						hitY = true;
+					}
+					if (hitX && hitY) temp.push(p.id);
+				}
+			}
+			if (temp.length > 0) {
+				gameState = 2;
+				assets = [{text:`Player ${temp.join(", ")} hit the corner`, x: 0, y: maxY/2, w:maxX, h:0, id: "info", colour: "transparent"}]
 			}
 		}
 	}
@@ -2751,6 +2664,31 @@ Try to remove the subzone
 		for (let i = 0; i < alivePlayers.length; i++) {
 			alivePlayers[i].angle = 360 * (i / alivePlayers.length);
 			alivePlayers[i].angle0 = alivePlayers[i].angle; // Add this line
+		}
+	}
+
+	function setPlayerGrid(r,c,mX,mY,xX,xY) {
+		let alivePlayers = players.filter(p => p.status != "DEAD");
+		if (r < 0 && c < 0) {
+			r = Math.ceil(Math.sqrt(alivePlayers.length));
+			c = Math.ceil(alivePlayers.length / r);
+		} else if (r < 0) {
+			r = Math.ceil(alivePlayers.length / c);
+		} else if (c < 0) {
+			c = Math.ceil(alivePlayers.length / r);
+		}
+		let cellWidth = xX / c;
+		let cellHeight = xY / r;
+		let playerIndex = 0;
+		for (let i = 0; i < r; i++) {
+			for (let j = 0; j < c; j++) {
+				if (playerIndex >= alivePlayers.length) return;
+				let x = j * cellWidth + mX;
+				let y = i * cellHeight + mY;
+				alivePlayers[playerIndex].x = x + cellWidth / 2;
+				alivePlayers[playerIndex].y = y + cellHeight / 2;
+				playerIndex++;
+			}
 		}
 	}
 
@@ -3060,8 +2998,8 @@ Try to remove the subzone
 		gZone.innerHTML = `
 			<style>
 				@keyframes scrollCredits {
-					0% { transform: translateY(100%); }
-					100% { transform: translateY(-200%); }
+					0% {transform: translateY(100%); }
+					100% {transform: translateY(-200%); }
 				}
 				.credits-container {
 					height: 60vh;
