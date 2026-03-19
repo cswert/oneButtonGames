@@ -2,7 +2,7 @@
 <title>oneButtonGamesV5</title>
 <!--
 A series of simple games that only need one button
-Last Modified Aug 25
+Last Modified Sep 25
 Use "npm i -g http-server" and "http-server" for codespace port
 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no">
@@ -126,7 +126,7 @@ Use "npm i -g http-server" and "http-server" for codespace port
 		<div id=header class=head>Select A Game</div><br>
 		<div id=main>
 			<select id=game class=drop>
-				<option>Hill Climb Racing</option>
+				<option>Bowling Sorta</option>
 
 				<option>First to Answer</option>
 				<option>Fastest Clicker</option>
@@ -150,12 +150,12 @@ Use "npm i -g http-server" and "http-server" for codespace port
 				<option>Kitten Canon</option>
 				<option>DVD Logos</option>
 				<option>TP Unroll</option>
-				<option>Pong</option>
-
+				<option>Hill Climb Racing</option>
 				<option>Langton Snake</option>
 				<option>Lock Picking</option>
 				<option>Skill Stop Jackpot</option>
-				<option>Bowling Sorta</option>
+				<option>Pong</option>
+
 				<option>Kahoot</option>
 			</select>
 			<button class=btn onclick=chooseGame()>Start the Game</button>
@@ -170,18 +170,17 @@ Use "npm i -g http-server" and "http-server" for codespace port
 					<option>Height</option>
 					<option>Width</option>
 				</Select>
-				&nbsp; FPS: <input id=asdf type=number value=60 min=1 max=100 onchange="{fps=1000/this.value}">
+				&nbsp; FPS: <input id=asdf type=number value=60 min=1 max=1000 onchange="{fps=1000/this.value}">
 				&nbsp; Diplay: <Select id=type class=drop onchange="displayType=this.value;">
+					<option>CSS</option>
 					<option>HTML</option>
 					<option>Canvas</option>
-					<option>CSS</option>
 				</Select>
 			</div>
 		</div>
 	</div>
 	<br>
 	<div id=gZone style="overflow: hidden;"></div>
-	<div id=sZone class=overlay></div>
 </body>
 
 <script>
@@ -190,11 +189,10 @@ Readd controller players
 Add player queueing for dynamic arrays
 Add control dials/button for needed games
 Change everything to the same thing for scaling
-Try to remove the subzone
 */
 
 //========================================== Starting Stuff ==========================================
-	let gamemode = "home", fps = 17, assets = [], temp, config = {}, displayType = "HTML", pause = false;
+	let gamemode = "home", fps = 17, assets = [], temp, config = {}, displayType = "CSS", pause = false;
 	let maxX, maxY, timeLimit, currTime = Date.now(); startTime = Date.now();
 	let mousePlayer = false, gameState = 0, canvas, ctx;
 	let players = [{score: 0, pressed: 0, status: 0, id: "M", emoji: "😊"}];
@@ -256,9 +254,6 @@ Try to remove the subzone
 		header.removeAttribute("style");
 		gZone.innerHTML = "";
 		gZone.removeAttribute("style");
-		gZone.style.overflow = "hidden";
-		sZone.innerHTML = "";
-		sZone.style.display = "none";
 		gamemode = "home";
 		opts.style.display = "";
 		clearGame();
@@ -390,14 +385,27 @@ Try to remove the subzone
 		//the player who gets closest to the target time wins
 	}
 
-	function snakesAndLadders() {
+	function serpantsAndCrosses() {
 		//players roll a die to move around a board
 		//if they land on a snake they go down, if they land on a ladder they go up
 		//first player to reach the end wins
 	}
 
+	function pinballWizard() {
+		//put stuff here
+	}
+
+	function craneGame() {
+		//put stuff here
+	}
+
+	function blackJack() {
+		//	
+	}
+
 	// assets = [{text:``, x: 0, y: maxY/2, w:maxX, h:0, id: "info", colour: "transparent"}];
 	// opts.style.display = "none";
+	// if (!options.innerHTML.includes("")) {options.innerHTML = ``;}
 	// for (let p of players) {
 	// 	p.x = maxX / (players.length+1) * (players.indexOf(p)+1);
 	// 	p.y = maxY/3; p.w = p.h = Math.min(50,maxX/players.length/5);
@@ -407,448 +415,229 @@ Try to remove the subzone
 	async function kahoot() {
 		let colours = ["black","red","blue","darkgoldenrod","green","purple","fuchsia"];
 		let shapes = ["E","▲","⯁","⬤","◼","⬟","⬢"];
-		if (gameState == 0) {
-			temp = [];
-			let [temp2] = await window.showOpenFilePicker();
-			temp2 = await temp2.getFile()
-			const reader = new FileReader();
-			reader.readAsText(temp2);
-			reader.onload = function(e) {
-				temp2 = reader.result.split("\r\n");
-				for (let i in temp2) {temp[i] = temp2[i].split("|");}
-			}
-			gameState = 1;
-		}
-		if (gameState == 1) {
-			console.log("no questions found")
-			if (temp.length < 1) return;
-			console.clear();
-			gameState = 2;
-			timeLimit = currTime + 10000;
-		}
-		if (gameState == 2) {
-			gZone.innerHTML = temp[0][0] + "<br>Time remaining: " + Math.round(timeLimit-currTime);
-			let temp2 = "<div style='display: flex;flex-wrap: wrap;'>";
-			for (let i = 1; i < temp[0].length-1; i++) {
-				temp2 += "<div class=kaque style='background-color:";
-				temp2 += `${colours[i]}'>${shapes[i]}&nbsp${temp[0][i]}</div>`
-			}
-			temp2 += "</div>"
-			gZone.innerHTML += temp2;
-			for (let p of players) {
-				if (p.pressed == currTime) p.status++;
-				if (p.status > temp[0].length-2 || p.status == 0) p.status = 1;
-			}
-			sZone.innerHTML = "<br>" + displayPlayersTable('status');
-			temp2 = document.querySelectorAll("td");
-			for (let i in players) {temp2[i].innerHTML = `Player ${p.id}: ${shapes[p.status]}`;}
-			if (currTime > timeLimit) {
-				gameState = 3;
-				timeLimit = currTime + 5000;
-				sZone.style.height = "60%";
-			}
-		}
-		if (gameState == 3) {
-			if (currTime > timeLimit) {
-				console.log(temp[0]);
-				temp.shift();
-				gameState = (temp.length > 0) ? 2 : 4;
-				timeLimit = currTime + 10000;
-				sZone.style.height = "";
-			}
-			if (timeLimit != currTime + 5000) return;
-			gZone.innerHTML = temp[0][0] + "<br>The answer was: ";
-			let randy = Math.floor((Math.random()*temp[0].length))-1;
-			gZone.innerHTML += (rando.checked) ? temp[0][randy] : temp[0][temp[0].at(-1)];
-			sZone.innerHTML = "";
-			let temp2 = [0,0,0,0,0,0];
-			for (let p of players) {
-				temp2[p.status]++;
-				if (rando.checked) {
-					if (p.status == randy) p.score++;
-				}
-				else {
-					if (p.status == temp[0].at(-1)) p.score++;
-				}
-				p.status = 1;
-			}
-			let temp3 = `<div style='display:flex; height:50%; justify-content: center; align-items: 
-				flex-end;'>`;
-			let sum = 0;
-			temp2.forEach( num => {sum += num;});
-			for (let i in temp2) {
-				if (temp2[i] == 0) continue;
-				temp3 += `<div style='width: 20%; background-color:${colours[i]}; `;
-				temp3 += `height:${Math.round(temp2[i]/sum*100)}%'>${Math.round(temp2[i]/sum*100)}%`;
-				temp3 += `<br>${temp[0][i]}</div>`;
-			}
-			temp3 += "</div>";
-			sZone.innerHTML = temp3;
-		}
-		if (gameState == 4) {
-			gZone.innerHTML = "That concludes the questionaire.<br>" + displayPlayersTable('score');
-			sZone.innerHTML = "";
-			gameState = 5;
-		}
-	}
-
-	function langtonSnake() {
-		//a combination of langton's ant, and snake to each other, ends with 1 player left... this game sucks
-		let temp2 = ["▲","►","▼","◄","X"];
-		if (gameState == 0) {
-			gameState = 1;
-			timeLimit = currTime + 5000;
-			startTime = currTime;
-			temp = [];
-			for (let i = 0; i < 31; i++) {temp.push(new Array(51).fill(""));}
-			sZone.innerHTML = r2t2(temp);
-			document.querySelectorAll("table")[0].id = "ttt";
-			ttt.style.borderCollapse = "collapse";
-			temp = document.querySelectorAll("td");
-			for (let i = 0; i < temp.length; i++) {
-				temp[i].style.border = "1px solid green";
-				temp[i].style.width = "1.2rem";
-				temp[i].style.height = "1.2rem";
-				temp[i].style.fontSize = "1rem";
-				temp[i].style.mixBlendMode = "difference";
-			}
-			temp = [Math.round(Math.random()*30),Math.round(Math.random()*50)];
-			ttt.rows[temp[0]].cells[temp[1]].innerHTML = "&#127822";
-			for (let p of players) {
-				p.score = [Math.round(Math.random()*3),Math.round(Math.random()*30),Math.round(Math.random()*50)];
-				p.history = [(rando.checked) ? (Math.random()*15)+3 : 7,[p.score[1],p.score[2]]];
-				ttt.rows[p.score[1]].cells[p.score[2]].innerHTML = temp2[p.score[0]];
-				ttt.rows[p.score[1]].cells[p.score[2]].style.background = p.colour;
-			}
-		}
-		if (gameState == 1) {
-			gZone.innerHTML = `Next move in ${Math.round(timeLimit - currTime)}`;
-			if (timeLimit < currTime) {
-				if (currTime > startTime + 30000) timeLimit = currTime + ((rando.checked) ? Math.random()*1000 : 500);
-				else timeLimit = currTime + ((rando.checked) ? Math.random()*1500 : 1500);
-				document.querySelectorAll("td").forEach(td => td.innerHTML = "");
-				for (let p of players) {
-					if (p.status != "DEAD") {
-						if (p.score[0] == 0 || p.score[0] == 2) {
-							p.score[0] = (p.pressed != 0) ? 3 : 1;
-							p.score[1] += (p.pressed != 0) ? 1 : -1;
-						}
-						else {
-							p.score[0] = (p.pressed != 0) ? 2 : 0;
-							p.score[2] += (p.pressed != 0) ? 1 : -1;
-						}
-						if (p.score[1] < 0) p.score[1] = 30;
-						if (p.score[1] > 30) p.score[1] = 0;
-						if (p.score[2] < 0) p.score[2] = 50;
-						if (p.score[2] > 50) p.score[2] = 0;
-						p.history.push([p.score[1],p.score[2]]);
-					}
-					ttt.rows[p.score[1]].cells[p.score[2]].innerHTML = temp2[p.score[0]];
-					if (p.history.length > p.history[0]+1) {
-						ttt.rows[p.history[1][0]].cells[p.history[1][1]].style.background = "";
-						p.history.splice(1,1);
-					}
-					if (ttt.rows[p.score[1]].cells[p.score[2]].style.background != "") {
-						p.status = "DEAD";
-						p.score[0] = 4;
-					}
-					else ttt.rows[p.score[1]].cells[p.score[2]].style.background = p.colour;
-					if (p.score[1] == temp[0] && p.score[2] == temp[1]) {
-						p.history[0] += (rando.checked) ? (Math.random()*5)-3 : 1;
-						let temp3 = true;
-						while (temp3) {
-							temp = [Math.round(Math.random()*30),Math.round(Math.random()*50)];
-							if (ttt.rows[temp[0]].cells[temp[1]].style.background == "") temp3 = false;
-						}
-					}
-				}
-				if (rando.cheked) {
-					let temp3 = true;
-					while (temp3) {
-						temp = [Math.round(Math.random()*30),Math.round(Math.random()*50)];
-						if (ttt.rows[temp[0]].cells[temp[1]].style.background == "") temp3 = false;
-					}
-				}
-				ttt.rows[temp[0]].cells[temp[1]].innerHTML = "&#127822";
-				let temp3 = (players.filter(p => p.status != 'DEAD').length > 1) ? true : false;
-				gameState = (temp3) ? 1 : 2;
-				if (gameState == 2) {
-					for (let p of players) {
-						if (p.status != "DEAD") {temp3 = p.id; break;}
-					}
-					gZone.innerHTML = `Player ${temp3} JUAN the game!`
-				}
-			}
-		}
-	}
-
-	function lockPicking() {
-		if (gameState == 0) {
-			gameState = 1;
-			sZone.style.display = "ruby";
-			gZone.innerHTML = `Line up and raise the tumblers`;
-			temp = [];
-			let temp2 = Math.round(Math.random()*2)+3;
-			for (let i = 0; i < temp2; i++) {
-				temp.push([i*(100/temp2)+2*5,1,(Math.random()*4)+2,2]);
-			}
-			for (let p of players) {
-				p.status = [1,0,0,0]
-				if (rando.checked) {
-					temp2 = Math.round(Math.random()*4)+1;
-					temp = [];
-					for (let i = 0; i < temp2; i++) {
-						temp.push([i*(100/temp2)+2*5,1,(Math.random()*4)+2,(Math.random()*2)+1]);
-					}
-				}
-				p.score = temp.map(P => [...P]);
-			}
-		}
-		if (gameState == 1) {
-			let game = "";
-			for (let p of players) {
-				if (p.pressed) {
-					for (let j in p.score) {
-						if (p.status[1] >= p.score[j][0] && p.status[1] <= p.score[j][0]+2.75) {
-							p.status[2] += .1;
-							if (p.status[2] > 6.75) p.status[2] = 6.75;
-							if (p.status[2] < p.score[j][1]) p.score[j][1] += 0.1
-						}
-					}
-					
-				}
-				else if (p.status[2] > 0) {
-					p.status[2] = 0;
-					if (p.status[2] < 0) p.status[2] = 0;
-				}
-				else {
-					p.status[1] += p.status[0];
-					if (p.status[1] > 91) {
-						p.status[0] = -1;
-						if (p.status[3] == 1) {
-							gameState = 2;
-							gZone.innerHTML = `Player ${p.id} unlocked the thing`;
-						}
-					}
-					else if (p.status[1] < 1) p.status[0] = 1;
-				}
-				game+=`<div style='width:18rem; height:10rem; background:${p.colour}; position:relative; margin:.1rem'>
-					<div style='height:2rem; width:90%; background:var(--fc); position:absolute; bottom:1rem; justify-self:anchor-center'>
-					<div style='bottom:${p.status[2]+.25}rem; left:${p.status[1]}%; height:1.5rem; width:1.5rem; 
-					background:fuchsia; position:absolute; z-index:1'></div>`;
-				p.status[3] = 1;
-				for (let j in p.score) {
-					if (p.score[j][1] > 6.5) p.score[j][1] = 1;
-					if (!(p.score[j][1] >= p.score[j][2] && 
-						p.score[j][1] <= p.score[j][2] + p.score[j][3]-1)) p.status[3] = 0;
-					game+=`<div style='height:7.5rem; width:2rem; background:var(--fc); position:absolute; bottom:1rem; left:${p.score[j][0]}%;'>
-					<div style='bottom:${p.score[j][2]}rem; height:${p.score[j][3]}rem; width:2rem; background:green; position:absolute'></div>
-					<div style='bottom:${p.score[j][1]}rem; height:1rem; width:2rem; background:black; position:absolute'></div></div>`;
-				}
-				if (p.status[3] == 1) {
-					game += `<div style='position:absolute; background:yellow; height:2rem; width:2rem; left:91%;'></div></div></div>`
-				}
-				else game += `</div></div>`;
-			}
-			sZone.innerHTML = game;
-		}
-	}
-
-	function skillStopJackpot() {
-		if (gameState == 0) {
-			gameState = 1;
-			temp = [];
-			let game = "";
-			let pcount = 0
-			for (let p of players) {
-				p.status = [0,0,0];
-				p.score = [0,0,0];
-				game += `<div style='width:9rem; height:10rem; background:${p.colour}; 
-					position:relative; margin:.1rem'>
-					<div style='bottom:2rem; left:15%; height:6rem; width:1.5rem; 
-					background:linear-gradient(fuchsia,black); background-position-y:${p.score[0]}rem; 
-					background-repeat:repeat-y; position:absolute; z-index:1' id=0slot${pcount}></div>
-					<div style='bottom:2rem; left:43%; height:6rem; width:1.5rem; 
-					background:linear-gradient(fuchsia,black); background-position-y:${p.score[1]}rem;
-					background-repeat:repeat-y; position:absolute; z-index:1' id=1slot${pcount}></div>
-					<div style='bottom:2rem; left:73%; height:6rem; width:1.5rem; 
-					background:linear-gradient(fuchsia,black); background-position-y:${p.score[2]}rem;
-					background-repeat:repeat-y; position:absolute; z-index:1' id=2slot${pcount}></div>
-					<div style='position:absolute; bottom:4.5rem; left:.5rem; height:1rem; width:8rem; background:var(--fc)'>
-					</div><div style='colour:var(--fc); font-size:1.5rem' id=count${pcount}>Attempts: 0</div></div>`;
-				pcount++;
-			}
-			gZone.innerHTML = "Line up the stuff";
-			sZone.innerHTML = game;
-			sZone.style.display = "ruby";
-		}
-		if (gameState == 1) {
-			let pcount = 0;
-			for (let p of players) {
-				if (p.pressed == currTime) p.status[0]++;
-				if (p.status[0] < 1) p.score[0] += (rando.checked) ? Math.random()-.5 : .1;
-				if (p.status[0] < 2) p.score[1] += (rando.checked) ? Math.random()*2-1 : .5;
-				if (p.status[0] < 3) p.score[2] += (rando.checked) ? Math.random()*4-2 : 1;
-				if (p.status[0] >= 3) {
-					if (p.status[1] == 0) p.status[1] = currTime + 1000;
-					if (p.status[1] < currTime) {
-						p.status[0] = 0;
-						p.status[1] = 0;
-						p.status[2]++;
-						document.getElementById(`count${pcount}`).innerHTML = `Attempts: ${p.status[2]}`;
-					} 
-				}
-				let temp2 = 0;
-				for (let j in p.score) {
-					if (p.score[j] > 6) p.score[j] = 0;
-					if (p.score[j] >= 2.5 && p.score[j] <= 3.5 && p.status[0] >= 3) temp2++;
-					document.getElementById(`${j}slot${pcount}`).style.backgroundPositionY = p.score[j] + "rem";
-				}
-				if (temp2 == 3) temp.push(p.id);
-				pcount++;
-			}
-			if (temp.length > 0) {
-				gameState = 2;
-				gZone.innerHTML = `Player${(temp.lengh>1)?"s":""} ${temp.join(", ")} hit the jackpot`;
-			}
-		}
+		// if (gameState == 0) {
+		// 	temp = [];
+		// 	let [temp2] = await window.showOpenFilePicker();
+		// 	temp2 = await temp2.getFile()
+		// 	const reader = new FileReader();
+		// 	reader.readAsText(temp2);
+		// 	reader.onload = function(e) {
+		// 		temp2 = reader.result.split("\r\n");
+		// 		for (let i in temp2) {temp[i] = temp2[i].split("|");}
+		// 	}
+		// 	gameState = 1;
+		// }
+		// if (gameState == 1) {
+		// 	console.log("no questions found")
+		// 	if (temp.length < 1) return;
+		// 	console.clear();
+		// 	gameState = 2;
+		// 	timeLimit = currTime + 10000;
+		// }
+		// if (gameState == 2) {
+		// 	gZone.innerHTML = temp[0][0] + "<br>Time remaining: " + Math.round(timeLimit-currTime);
+		// 	let temp2 = "<div style='display: flex;flex-wrap: wrap;'>";
+		// 	for (let i = 1; i < temp[0].length-1; i++) {
+		// 		temp2 += "<div class=kaque style='background-color:";
+		// 		temp2 += `${colours[i]}'>${shapes[i]}&nbsp${temp[0][i]}</div>`
+		// 	}
+		// 	temp2 += "</div>"
+		// 	gZone.innerHTML += temp2;
+		// 	for (let p of players) {
+		// 		if (p.pressed == currTime) p.status++;
+		// 		if (p.status > temp[0].length-2 || p.status == 0) p.status = 1;
+		// 	}
+		// 	sZone.innerHTML = "<br>" + displayPlayersTable('status');
+		// 	temp2 = document.querySelectorAll("td");
+		// 	for (let i in players) {temp2[i].innerHTML = `Player ${p.id}: ${shapes[p.status]}`;}
+		// 	if (currTime > timeLimit) {
+		// 		gameState = 3;
+		// 		timeLimit = currTime + 5000;
+		// 		sZone.style.height = "60%";
+		// 	}
+		// }
+		// if (gameState == 3) {
+		// 	if (currTime > timeLimit) {
+		// 		console.log(temp[0]);
+		// 		temp.shift();
+		// 		gameState = (temp.length > 0) ? 2 : 4;
+		// 		timeLimit = currTime + 10000;
+		// 		sZone.style.height = "";
+		// 	}
+		// 	if (timeLimit != currTime + 5000) return;
+		// 	gZone.innerHTML = temp[0][0] + "<br>The answer was: ";
+		// 	let randy = Math.floor((Math.random()*temp[0].length))-1;
+		// 	gZone.innerHTML += (rando.checked) ? temp[0][randy] : temp[0][temp[0].at(-1)];
+		// 	sZone.innerHTML = "";
+		// 	let temp2 = [0,0,0,0,0,0];
+		// 	for (let p of players) {
+		// 		temp2[p.status]++;
+		// 		if (rando.checked) {
+		// 			if (p.status == randy) p.score++;
+		// 		}
+		// 		else {
+		// 			if (p.status == temp[0].at(-1)) p.score++;
+		// 		}
+		// 		p.status = 1;
+		// 	}
+		// 	let temp3 = `<div style='display:flex; height:50%; justify-content: center; align-items: 
+		// 		flex-end;'>`;
+		// 	let sum = 0;
+		// 	temp2.forEach( num => {sum += num;});
+		// 	for (let i in temp2) {
+		// 		if (temp2[i] == 0) continue;
+		// 		temp3 += `<div style='width: 20%; background-color:${colours[i]}; `;
+		// 		temp3 += `height:${Math.round(temp2[i]/sum*100)}%'>${Math.round(temp2[i]/sum*100)}%`;
+		// 		temp3 += `<br>${temp[0][i]}</div>`;
+		// 	}
+		// 	temp3 += "</div>";
+		// 	sZone.innerHTML = temp3;
+		// }
+		// if (gameState == 4) {
+		// 	gZone.innerHTML = "That concludes the questionaire.<br>" + displayPlayersTable('score');
+		// 	sZone.innerHTML = "";
+		// 	gameState = 5;
+		// }
 	}
 
 	function bowlingSorta() {
 		if (gameState == 0) {
 			gameState = 1;
-			temp = [];
-			let game = "";
-			for (let i in players) {
-				players[i].status = [0,315,0,0];
-				players[i].score = [0,0];
-				game += `<div style='width:9rem; height:20rem; background:${players[i].colour}; 
-					position:relative; margin:.1rem'>
-					<div style='background:peru; width:7rem; height:18rem; position:absolute; place-self:anchor-center'>
-					<div style='position:absolute; height:2.5rem; width:2.5rem; background:fuchsia' id=ball${i}>
-					<div style='position:absolute; background:red; display:none'></div></div>
-					<div style='border:black solid 1px; bottom:16rem; left:.5rem; height:2.5rem; width:1rem; 
-					background:var(--fc); position:absolute' id=10pin${i}></div>
-					<div style='border:black solid 1px; bottom:16rem; left:2.27rem; height:2.5rem; width:1rem; 
-					background:var(--fc); position:absolute' id=9pin${i}></div>
-					<div style='border:black solid 1px; bottom:16rem; left:3.75rem; height:2.5rem; width:1rem; 
-					background:var(--fc); position:absolute' id=8pin${i}></div>
-					<div style='border:black solid 1px; bottom:16rem; left:5.5rem; height:2.5rem; width:1rem; 
-					background:var(--fc); position:absolute' id=7pin${i}></div>
-					<div style='border:black solid 1px; bottom:15rem; left:1.5rem; height:2.5rem; width:1rem; 
-					background:var(--fc); position:absolute' id=6pin${i}></div>
-					<div style='border:black solid 1px; bottom:15rem; left:3rem; height:2.5rem; width:1rem; 
-					background:var(--fc); position:absolute' id=5pin${i}></div>
-					<div style='border:black solid 1px; bottom:15rem; left:4.5rem; height:2.5rem; width:1rem; 
-					background:var(--fc); position:absolute' id=4pin${i}></div>
-					<div style='border:black solid 1px; bottom:14rem; left:2rem; height:2.5rem; width:1rem; 
-					background:var(--fc); position:absolute' id=3pin${i}></div>
-					<div style='border:black solid 1px; bottom:14rem; left:4rem; height:2.5rem; width:1rem; 
-					background:var(--fc); position:absolute' id=2pin${i}></div>
-					<div style='border:black solid 1px; bottom:13rem; left:3rem; height:2.5rem; width:1rem; 
-					background:var(--fc); position:absolute' id=1pin${i}></div>
-					<br><br><br>${players[i].id}</div></div>`;
+			if (!options.innerHTML.includes("Pins")) {
+				options.innerHTML = `Pins <input type=range id=pn value=10 min=1 max=105>
+				<br>Side Speed <input type=range id=ss value=.1 min=.01 max=1 step=.01>
+				<br>Meter Speed <input type=range id=ms value=4 min=1 max=10>
+				<br>Max Power <input type=range id=mp value=7 min=5 max=10 step=.1>
+				<br>Shrinkage <input type='checkbox' id='sh' checked>`;
 			}
-			gZone.innerHTML = "Bowl like your life depends on it!";
-			sZone.innerHTML = game;
-			sZone.style.display = "ruby";
+			temp = Math.floor(maxX/(maxY/2));
+			let gapx = maxY/2; let gapy = maxY;
+			setPlayerGrid(-1,temp,0,-maxY/players.length,maxX,maxY);
+			if (players.length > temp) {
+				for (let p of players) {
+					if (p.y > players[0].y && gapy == maxY) gapy = Math.min(gapy, p.y - players[0].y)*.95;
+				}
+			}
+			else if (players.length == 1){
+				players[0].x = maxX*.5; players[0].y = 0;
+			}
+			temp = [0];
+			for (let i=1; i <= 1*pn.value; i++) {
+				if (i > temp[0]*(temp[0]+1)/2) temp[0]++;
+				temp.push({
+					x: gapx * ((i - (temp[0] * (temp[0] - 1) / 2)) / (temp[0] + 1))-gapx/2,
+					y: gapy * (temp[0] / (Math.ceil(Math.sqrt(1*pn.value)) - 1)) * .25,
+					h: 30, w: 10, id: "pin"+i, colour: "lightgrey"});
+			}
+			temp.shift();
+			for (let p of players) {
+				p.w = p.h = p.scale = Math.min(30,maxX/(players.length**1.75));
+				p.x0 = p.x-gapx*.9/2+p.w/2; p.x1 = p.x+gapx*.9/2;
+				p.y0 = p.y; p.y1 = p.y+gapy;
+				p.score = [];
+				p.status = 1;
+				p.ball = 1;
+				assets.push({x: p.x+p.w/2-gapx*.9/2, y: p.y, w:gapx*.9, h:gapy, id: `floor${p.id}`, colour: "chocolate"});
+				for (let t of temp) {
+					if (!isNaN(t)) continue;
+					assets.push({h: t.h, w: t.w, x: p.x+t.x+p.w/2-t.w/2, y: p.y0+t.y+gapy*.5, id: t.id+p.id, colour: t.colour});
+					p.score.push(assets.length-1);
+				}
+				assets.push({text:`Ball: ${p.ball}`, x: p.x-p.w, y: p.y+gapy/2, w:0, h:p.h, id: `balls${p.id}`,
+					colour: "transparent", scale: 1/(players.length**.5)});
+				p.x = p.x0;
+			}
 		}
 		if (gameState == 1) {
-			let pcount = 0;
 			for (let p of players) {
-				if (p.pressed == currTime) p.status[0] += 2;
-				switch (p.status[0]) {
-					case 0: p.score[0] += .1; break;
-					case 1: p.score[0] -= .1; break;
-					case 2: p.status[1] += 5; break;
-					case 3: p.status[1] -= 5; break;
-					case 4: p.status[2] += .1; break;
-					case 5: p.status[2] -= .1; break;
-				}
 				if (rando.checked && p.pressed == currTime) {
-					p.status[0] = 8;
-					p.score[0] = Math.random()*4.5;
-					p.score[1] = 0;
-					p.status[1] = (Math.random()*90)+315;
-					p.status[2] = Math.random()*2.5;
+					p.status = 7;
+					p.power = 3*mp.value*Math.random();
+					p.angle = 255 + Math.random()*60;
+					p.dx = Math.cos((p.angle-180)*Math.PI/180)*p.power;
+					p.dy = Math.sin((p.angle-180)*Math.PI/180)*p.power;
+					p.y = p.y0;
+					p.x = p.x0+(p.x1-p.x0)*Math.random();
 				}
-				if (p.score[0] < 0 || p.status[1] < 315 || p.status[2] < 0 &&
-					p.status[0] < 10) p.status[0]--;
-				if (p.score[0] > 4.5 || p.status[1] > 405 || p.status[2] > 2.25 &&
-					p.status[0] < 10) p.status[0]++;
-				let temp2 = "ball" + pcount;
-				temp2 = document.getElementById(temp2);
-				if ([2,3].includes(p.status[0])) {
-					temp2.children[0].style.display = "";
-					temp2.children[0].style.bottom = "2.5rem";
-					temp2.children[0].style.height = "1rem";
-					temp2.children[0].style.width = ".25rem";
-					temp2.children[0].style.justifySelf = "anchor-center";
-					temp2.children[0].style.transformOrigin = "bottom center";
-					temp2.children[0].style.transform = `rotate(${p.status[1]}deg)`;
-				}
-				else if ([4,5].includes(p.status[0])) {
-					temp2.children[0].style.height = ".25rem";
-					temp2.children[0].style.width = "2.5rem";
-					temp2.children[0].style.justifySelf = "";
-					temp2.children[0].style.transformOrigin = "";
-					temp2.children[0].style.transform = "";
-					temp2.children[0].style.bottom = p.status[2]+"rem";
-				}
-				else if (p.status[0] > 5) {
-					if (p.status[0] < 10) {
-						p.status[0] = currTime + 5000;
-						temp2.children[0].style.display = "none";
-						let temp3 = [0,0];
-						p.status[1] *= Math.PI/180;
-						temp3[1] = Math.cos(p.status[1])*p.status[2]/5;
-						temp3[0] = Math.sin(p.status[1])*p.status[2]/5;
-						p.status[1] = temp3[0];
-						p.status[2] = temp3[1];
+				else if (p.pressed == currTime && p.status < 7) {
+					p.status += 2;
+					if (p.status % 2 == 0) p.status--;
+					if (p.status == 3 || p.status == 4) p.angle = 270;
+					if (p.status == 5 || p.status == 6) {
+						p.power = 0;
+						assets.push({id:`power${p.id}`, angle: p.angle, x: p.x-p.w*.25, y: p.y+p.h/10, w:p.w*1.5, h:p.h/10, colour: "red"});
 					}
-					p.score[0] += p.status[1];
-					p.score[1] += p.status[2];
-					if (p.score[0] < -1) p.score[0] = -1;
-					if (p.score[0] > 7) p.score[0] = 7;
-					if (p.score[1] > 18) p.score[1] = 18;
-					let temp3 = Math.max(1, 2.5 * (1 - p.score[1] / 18));
-					if (rando.checked) temp3 = Math.max(.1, 1 - p.status[3] / 10);
-					temp2.style.height = temp3 + "rem";
-					temp2.style.width = temp3 + "rem";
-					let obj1 = {x1:parseFloat(temp2.style.left),x2:parseFloat(temp2.style.width),
-						y1:parseFloat(temp2.style.bottom),y2:parseFloat(temp2.style.height)};
-					obj1.x2 += obj1.x1;
-					obj1.y2 += obj1.y1;
-					for (let j = 1; j < 11; j++) {
-						try {
-							let temp3 = j + "pin" + pcount;
-							temp3 = document.getElementById(temp3);
-							let obj2 = {x1:parseFloat(temp3.style.left),x2:parseFloat(temp3.style.width),
-							y1:parseFloat(temp3.style.bottom),y2:parseFloat(temp3.style.height)/2};
-							obj2.x2 += obj2.x1;
-							obj2.y2 += obj2.y1;
-							if (simpleCollide(obj1,obj2)) {
-								temp3.remove();
-								p.status[3]++;
+					if (p.status > 6) {
+						assets = assets.filter(a => !a.id.includes(`power${p.id}`));
+						p.dx = Math.cos((p.angle-180)*Math.PI/180)*p.power;
+						p.dy = Math.sin((p.angle-180)*Math.PI/180)*p.power;
+					}
+				}
+				switch (p.status) {
+					case 1:
+						p.x += fps*ss.value;
+						if (p.x > p.x1-p.w/2) {p.x = p.x1-p.w/2; p.status = 2;}
+						break;
+					case 2:
+						p.x -= fps*ss.value;
+						if (p.x < p.x0) {p.x = p.x0; p.status = 1;}
+						break;
+					case 3:
+						p.angle += ms.value*fps/17;
+						if (p.angle > 315) {p.angle = 315; p.status = 4;}
+						break;
+					case 4:
+						p.angle -= ms.value*fps/17;
+						if (p.angle < 255) {p.angle = 255; p.status = 3;}
+						break;
+					case 5:
+						p.power += .05*ms.value*fps/17;
+						if (p.power > mp.value) {p.power = mp.value; p.status = 6;}
+						assets.find(a => a.id == `power${p.id}`).y = p.y+p.h/10 + p.power/mp.value*p.h;
+						break;
+					case 6:
+						p.power -= .05*ms.value*fps/17;
+						if (p.power < 0) {p.power = 0; p.status = 5;}
+						assets.find(a => a.id == `power${p.id}`).y = p.y+p.h/10 + p.power/mp.value*p.h;
+						break;
+					case 7:
+						p.x += p.dx*fps/17; p.y += p.dy*fps/17;
+						p.angle += 2*fps;
+						if (rando.checked) p.w = p.h = p.scale*p.score.length/temp.length;
+						else if (sh.checked) p.w = p.h = Math.min(p.y1/p.y*p.scale/2,p.scale);
+						if (p.x < p.x0) p.x = p.x0
+						else if (p.x > p.x1-p.w/2) p.x = p.x1-p.w/2
+						if (p.y > p.y1-p.h) {
+							p.y = p.y1-p.h;
+							p.dy = p.dx = 0;
+							p.status = -currTime;
+						}
+						for (let i of p.score) {
+							if (simpleCollide(p, assets[i])) {
+								assets[i].w = assets[i].h = 0;
+								let sound = {type: "sine", frequency: 100, gain: .5, duration: 25, detune: -300, attack: 125, release: 150};
+								playSound(sound);
+								p.score.splice(p.score.indexOf(i),1);
 							}
-						} catch (error) {}
-						
-					}
+						}
+						break;
+					default:
+						if (currTime + p.status > 1000) {
+							p.ball++;
+							assets.find(a => a.id == `balls${p.id}`).text = `Ball: ${p.ball}`;
+							if (p.score.length < 1) {
+								gameState = 2;
+								assets.push({text:`Player ${p.id} Boweled wEll!`, x: 0, y: maxY, w:maxX, h:0, id: "win", colour: "transparent"});
+							}
+							else {
+								p.status = 1;
+								p.x = p.x0; p.y = p.y0;
+								p.w = p.h = p.scale;
+								delete p.angle; delete p.power; delete p.dx; delete p.dy;
+							}
+						}
+						break;
 				}
-				temp2.style.left = p.score[0] + "rem";
-				temp2.style.bottom = p.score[1] + "rem";
-				if (p.status[0] < currTime && p.status[0] > 10) {
-					p.status = [0,315,0,p.status[3]];
-					p.score = [0,0];
-					temp2.style.height = "2.5rem";
-					temp2.style.width = "2.5rem";
-				}
-				if (p.status[3] == 10) temp.push(p.id);
-				pcount++
-			}
-			if (temp.length > 0) {
-				gameState = 2;
-				gZone.innerHTML = `Player${(temp.lengh>1)?"s":""} ${temp.join(", ")} boweld well`;
 			}
 		}
 	}
@@ -2542,7 +2331,6 @@ Try to remove the subzone
 			let maxPX = Math.max(...alivePlayers.map(p => p.score[1] + p.w + maxX*.75));
 			let minX = Math.min(...alivePlayers.map(p => p.score[1] - maxX*.25));
 			let scale = (maxPX - minX) > 0 ? maxX / (maxPX - minX) : 1;
-			console.log(scale)
 			if (alivePlayers.length == 1) scale = 1;
 			assets = [{text: Math.round((maxPX-maxX*.75-10*ps.value)/10), x: 0, y: maxY, w: maxX, h: 0, id: "score", colour: "transparent"}];
 			while (temp[temp.length-1].x < maxPX*1.1) {
@@ -2621,6 +2409,262 @@ Try to remove the subzone
 			maxPX = Math.max(...players.map(p => p.x + p.w + maxX*.75));
 			assets.push({text: Math.round((maxPX-maxX*.75-10*ps.value)/10), x: Math.max(...players.map(p => p.x))-maxX*.1, y: maxY, w:maxX, h:0, id: "score", colour: "transparent"});
 			endDisplay();
+		}
+	}
+
+	function langtonSnake() {
+		//a combination of langton's ant, and snake to each other, ends with 1 player left... this game sucks
+		let temp2 = ["▲","►","▼","◄"];
+		if (gameState == 0) {
+			gameState = 1;
+			if (!options.innerHTML.includes("Apples")) {
+				options.innerHTML = `Player Size: <input type=range id=ps value=30 min=1 max=100>
+					<br>Pause Time: <input type=range id=pt value=500 min=100 max=5000>
+					<br>Max Apples: <input type=range id=ma value=3 min=0 max=10>
+					<br>Max Mines: <input type=range id=mm value=0 min=0 max=10>`;
+			}
+			timeLimit = currTime + 5000;
+			temp = [1];
+			while (temp.length <= 1*mm.value) {temp.push([maxX*Math.random(),maxY*Math.random()]);}
+			while (temp.length <= 1*ma.value+1*mm.value) {temp.push([maxX*Math.random(),maxY*Math.random()]);}
+			setPlayerGrid(-1,-1,0,0,maxX,maxY);
+			for (let p of players) {
+				p.history = [(rando.checked) ? (Math.random()*25)+3 : 10];
+				p.w = p.h = 1*ps.value;
+			}
+		}
+		if (gameState == 1) {
+			let alivePlayers = players.filter(p => p.status >= 0);
+			gameState = alivePlayers.length == 0 ? 2 : 1;
+			assets = [{text:Math.round((timeLimit-currTime)/100)/10, x: 0, y: maxY*.95, w:maxX, h:0, id: "info", colour: "transparent"}];
+			if (alivePlayers.length == 1) assets[0].text = `Player ${alivePlayers[0].id} JUAN the game`;
+			else if (alivePlayers.length == 0) {
+				let winner = players.reduce((minP, p) => (p.status < minP.status ? p : minP), players[0]);
+				assets[0].text = `Player ${winner.id} JUAN the game`;
+			}
+			for (let t of temp) {
+				if (temp.indexOf(t) == 0) continue;
+				if (temp.indexOf(t) <= 1*mm.value) assets.push({x: t[0], y: t[1], w: 20, h: 20, id: "mine"+temp.indexOf(t), colour: "magenta"});
+				else assets.push({x: t[0], y: t[1], w: 20, h: 20, id: "apple"+temp.indexOf(t), colour: "red"});
+			}
+			for (let p of players) {
+				for (let h of p.history) {
+					if (h.length > 1) assets.push({x: h[1][0], y: h[1][1], w: p.w, h: p.h, id: p.id+h[0]+"body",
+						colour: p.colour, opacity: (p.status < 0) ? 0.25 : 1});
+				}
+				if (p.status < 0) continue;
+				p.score = 0;
+				if (p.pressed != 0) p.score += 2;
+				if (p.status >= 0) assets.push({text:temp2[p.score+p.status], w: p.w, h: p.h, id: p.id+"arrow", colour: "transparent", scale: .8, 
+				x: p.x-p.w/4, y: p.y+p.h/4});
+				if (p.status == 1) assets.at(-1).x += p.w *.75 * (p.score == 0 ? 1 : -1);
+				else assets.at(-1).y += p.h * (p.score == 0 ? 1 : -1);
+			}
+			if (currTime > timeLimit) {
+				timeLimit = currTime + Math.max(1*pt.value, 5*pt.value/(1 + temp[0]*0.5));
+				temp[0]++;
+				for (let p of players) {
+					if (p.status >= 0) {
+						if (p.status == 0) {p.y += p.h * (p.score == 0 ? 1 : -1); p.status = 1;}
+						else {p.x += p.w * (p.score == 0 ? 1 : -1); p.status = 0;}
+						if (p.x < 0) {p.history.push([currTime - startTime, [p.x, p.y]]); p.x = maxX + p.x;}
+						else if (p.x + p.w > maxX) {p.history.push([currTime - startTime, [p.x, p.y]]); p.x = p.x - maxX;}
+						if (p.y < 0) {p.history.push([currTime - startTime, [p.x, p.y]]); p.y = maxY + p.y;}
+						else if (p.y + p.h > maxY) {p.history.push([currTime - startTime, [p.x, p.y]]); p.y = p.y - maxY;}
+						while (p.history.length > p.history[0]) p.history.splice(1,1);
+						p.history.push([currTime - startTime, [p.x, p.y]]);
+					}
+				}
+				for (let p of players) {
+					for (let a of assets) {
+						if (simpleCollide(p, a)) {
+							if (a.id.includes("body") && !a.id.includes(p.id) || a.id.includes("mine")) p.status = -1*currTime;
+							else if (a.id.includes("apple")) {
+								p.history[0]++;
+								temp.splice( a.id.replace("apple",""), 1);
+							}
+						}
+					}
+				}
+				for (let i in temp) {if (rando.checked && i != 0) temp[i] = [Math.random()*maxX, Math.random()*maxY];}
+				while (temp.length <= 1*ma.value+1*mm.value) {temp.push([maxX*Math.random(),maxY*Math.random()]);}
+			}
+		}
+	}
+
+	function lockPicking() {
+		if (gameState == 0) {
+			gameState = 1;
+			if (!options.innerHTML.includes("Speed")) {
+				options.innerHTML = `Side Speed: <input type=range id=ss value=100 min=25 max=1000>
+				<br>Vert Speed: <input type=range id=vs value=5 min=1 max=25>
+				<br>Max Pins: <input type=range id=mp value=3 min=1 max=6>`;
+			}
+			temp = [];
+			setPlayerGrid(-1,-1,0,0,maxX*.8,maxY*.8);
+			let gapx = maxX*.8; let gapy = maxY*.8;
+			if (players.length > 2) {
+				for (let p of players) {
+					if (p.x > players[0].x && gapx == maxX*.8) gapx = Math.min(gapx, p.x - players[0].x)*.95;
+					if (p.y > players[0].y && gapy == maxY*.8) gapy = Math.min(gapy, p.y - players[0].y)*.95;
+				}
+			}
+			else if (players.length == 2){
+				gapy = maxY/3;
+				players[0].x = maxX*.2; players[0].y = maxY*.15;
+				players[1].x = maxX*.2; players[1].y = maxY*.55;
+			}
+			else {
+				gapy = maxY/2;
+				players[0].x = maxX*.2; players[0].y = maxY/5;
+			}
+			let maxPins = Math.max(Math.floor(gapx/Math.min(30,maxX/(players.length**1.75))*1.5)-2, 1);
+			let temp2 = Math.min(Math.round(Math.random()*mp.value)+2, maxPins);
+			for (let i=0; i<temp2; i++) {
+				temp.push({x: i/(temp2+1)*gapx, y: 0, h: gapy*.9, id:"way"+i, colour: "lightgrey"});
+				temp.push({x: i/(temp2+1)*gapx, y: Math.random()*gapy*.9, h: gapy*.25, id:"keyway"+i, colour: "green"});
+				temp.at(-1).y = Math.min(temp.at(-1).y, (gapy*.9)-temp.at(-1).h);
+				temp.push({x: i/(temp2+1)*gapx, y: 0, h: gapy*.1, id:"pin"+i, colour: "black"});
+			}
+			for (let p of players) {
+				p.w = p.h = Math.min(30,maxX/(players.length**1.75));
+				p.x0 = p.x; p.x1 = p.x+gapx*.8; p.y0 = p.y; p.y1 = p.y+(gapy*.9);
+				if (rando.checked) {
+					maxPins = Math.max(Math.floor(gapx/p.w*1.5)-2,1);
+					temp2 = Math.min(Math.round(Math.random()*mp.value)+1, maxPins);
+					temp = [];
+					for (let i=0; i<temp2; i++) {
+						temp.push({x: i/(temp2+1)*gapx, y: 0, h: gapy*.9, id:"way"+i, colour: "lightgrey"});
+						temp.push({x: i/(temp2+1)*gapx, y: Math.random()*gapy*.9, h:  Math.random()*gapy*.25, id:"keyway"+i, colour: "green"});
+						temp.at(-1).h = Math.max(temp.at(-1).h, gapy*.11);
+						temp.at(-1).y = Math.min(temp.at(-1).y, (gapy*.9)-temp.at(-1).h);
+						temp.push({x: i/(temp2+1)*gapx, y: 0, h: gapy*.1, id:"pin"+i, colour: "black"});
+					}
+				}
+				p.score = [];
+				for (let t of temp) {
+					assets.push({x:p.x+t.x, y:p.y+p.h+t.y, w:1.2*p.w, h:t.h, id:t.id+temp.indexOf(t)+p.id, colour: t.colour});
+					p.score.push(assets.length-1);
+				}
+			}
+		}
+		if (gameState == 1) {
+			for (let p of players) {
+				if (p.pressed != 0) {
+					for (let s in p.score) {
+						if (assets[s].id.includes("keyway") && p.x > assets[s].x && p.x+p.w < assets[s].x + assets[s].w && p.y < p.y1) {
+							p.y += fps*vs.value/20/(players.length**.25);
+						}
+						if (assets[s].id.includes("pin") && simpleCollide(assets[s],p)) {
+							assets[s].y = p.y+p.h;
+							if (assets[s].y+assets[s].h > p.y1+p.h) assets[s].y = p.y0+p.h;
+							if (assets[s].y < assets[s-1].y ||  assets[s].y+ assets[s].h > assets[s-1].y+assets[s-1].h) temp = false;
+						}
+					}
+				}
+				else {
+					p.y = p.y0;
+					if (p.x < p.x0) p.status = 0;
+					else if (p.x > p.x1) p.status = 1;
+					p.x += (p.status == 0) ? fps*ss.value/500/(players.length**.25) : -fps*ss.value/500/(players.length**.25);
+				}
+				let temp2 = true;
+				for (let s in p.score) {
+					if (assets[p.score[s]].id.includes("pin") && (assets[p.score[s]].y < assets[p.score[s-1]].y || 
+						assets[p.score[s]].y+ assets[p.score[s]].h > assets[p.score[s-1]].y+assets[p.score[s-1]].h)) temp2 = false;
+				}
+				if (temp2 && !assets.some(a => a.id === `winner${p.id}`)) assets.push({x:p.x1+p.w*.9, y:p.y0, w:p.w*0.1, h:p.h*1.1, id:"winner"+p.id, colour:"yellow"});
+				if (temp2 && p.x >= p.x1-1) {
+					gameState = 2;
+					assets.push({text:`Player ${p.id} unlocked the thing`, x: 0, y: maxY, w:maxX, h:0, id: "info", colour: "transparent"});
+				}
+				else if (!temp2) assets = assets.filter(a => a.id !== `winner${p.id}`);
+			}
+		}
+		if (gameState == 2 && gZone.innerHTML.includes("unlocked")) {
+			gameState = 3;
+			pause = true;
+		}
+	}
+
+	function skillStopJackpot() {
+		if (gameState == 0) {
+			gameState = 1;
+			if (!options.innerHTML.includes("Slot")) {
+				options.innerHTML = `Slots <input type=range id=ss value=3 min=1 max=10>
+				<br>Wheel Speed <input type=range id=ws value=.25 min=.01 max=.5 step=0.01>`;
+			}
+			temp = [];
+			setPlayerGrid(-1,-1,0,0,maxX*.8,maxY*.8);
+			let gapx = maxX*.8; let gapy = maxY*.8;
+			if (players.length > 2) {
+				for (let p of players) {
+					if (p.x > players[0].x && gapx == maxX*.8) gapx = Math.min(gapx, p.x - players[0].x)*.95;
+					if (p.y > players[0].y && gapy == maxY*.8) gapy = Math.min(gapy, p.y - players[0].y)*.95;
+				}
+			}
+			else if (players.length == 2){
+				gapy = maxY/3;
+				players[0].x = maxX*.2; players[0].y = maxY*.15;
+				players[1].x = maxX*.2; players[1].y = maxY*.55;
+			}
+			else {
+				gapy = maxY/2;
+				players[0].x = maxX*.2; players[0].y = maxY/5;
+			}
+			for (let i=0; i<1*ss.value; i++) {temp.push({x: i/(1*ss.value+1)*gapx, y: 0, h: gapy*.9, id:"reel"+i, colour: "lightgrey"});}
+			temp.push({x: 0, y: gapy*.5-gapy*.15, h: gapy*.15, id:"winLine", colour: "green"});
+			for (let i=0; i<1*ss.value; i++) {temp.push({x: i/(1*ss.value+1)*gapx, y: 0, h: gapy*.1, id:"777"+i, colour: "black"});}
+			for (let p of players) {
+				p.w = p.h = Math.min(30,maxX/(players.length**1.75));
+				p.x0 = p.x; p.x1 = p.x+gapx*.8; p.y0 = p.y;
+				p.score = [];
+				p.status = 1;
+				p.attempts = 0;
+				for (let t of temp) {
+					if (t.id.includes("win")) assets.push({x:p.x+t.x, y:p.y+p.h+t.y, w:assets.at(-1).x+assets.at(-1).w-p.x0, h:t.h, 
+						id:t.id+temp.indexOf(t)+p.id, colour: t.colour});
+					else assets.push({x:p.x+t.x, y:p.y+p.h+t.y, w:(p.x1-p.x0)/ss.value*.8, h:t.h, id:t.id+temp.indexOf(t)+p.id, colour: t.colour});
+					p.score.push(assets.length-1);
+				}
+				assets.push({text:`Attempt: ${p.attempts}`, x: p.x, y: p.y+gapy*1.1, w:gapx*.75, h:p.h, id: `attempt${p.id}`,
+					colour: "transparent", scale: 1/(players.length**.5)});
+				p.score.push(assets.length-1);
+				p.x = p.x0+((p.x1-p.x0)/ss.value*.4-p.w/2)*p.status;
+			}
+			temp = [];
+		}
+		if (gameState == 1) {
+			let bar = Math.floor(players[0].score.length/2);
+			for (let p of players) {
+				let temp2 = true;
+				for (let s in p.score) {
+					if (s == p.score.length-1) {assets[p.score[s]].text = `Attempt: ${p.attempts}`; continue;}
+					if (s >= bar && s >= p.status-1+bar && rando.checked) assets[p.score[s]].y -= Math.random()*fps*((s**ws.value)-1)/(players.length**.5);
+					else if (s >= bar && s >= p.status-1+bar) assets[p.score[s]].y -= fps*((s**ws.value)-1)/(players.length**.5);
+					if (assets[p.score[s]].y < p.y+p.h) assets[p.score[s]].y = p.y+p.h+(assets[p.score[0]].h*.9);
+					if (p.status < bar) temp2 = false;
+					else if (s >= bar && (assets[p.score[s]].y < assets[p.score[bar-1]].y || 
+						assets[p.score[s]].y + assets[p.score[s]].h > assets[p.score[bar-1]].y + assets[p.score[bar-1]].h)) temp2 = false;
+				}
+				if (temp2) temp.push(p.id);
+				if (p.pressed == currTime && p.status < p.score.length/2) {
+					p.status++;
+					p.history = currTime;
+					if (p.status < p.score.length/2) p.x = assets[p.score[(p.status)-1]].x+((assets[p.score[0]].w-p.w)/2);
+					else p.x = p.x0;
+				}
+				if (p.status >= p.score.length/2 && p.history + 1000 < currTime) {
+					p.status = 1;
+					p.x = assets[p.score[(p.status)-1]].x+((assets[p.score[0]].w-p.w)/2);
+					p.attempts++;
+				}
+			}
+			if (temp.length > 0) {
+				gameState = 2;
+				assets.push({text:`Player${temp.length > 1 ? "s" : ""} ${temp.join(", ")} hit the JACKPOT!`,
+					x: 0, y: maxY, w:maxX, h:0, id: "info", colour: "transparent"});
+			}
 		}
 	}
 
@@ -2717,46 +2761,6 @@ Try to remove the subzone
 			}
 		}
 		return [minPlayers, maxPlayers];
-	}
-
-	function displayPlayersTable(propertyName) {
-		let tableHTML = '<table>';
-		if (players && players.length < 0) return "No players data available.";
-		let numCols = Math.floor(Math.sqrt(players.length));
-		if (numCols > 4) numCols = 4;
-		let cellsInRow = 0;
-		tableHTML += '<tbody>';
-		let pcount = 0;
-		for (let p of players) {
-			if (cellsInRow === 0) tableHTML += '<tr>';
-			let propertyValue = p[propertyName];
-			let cellStyle = `color: ${p.colour || '#ffffff'};`;
-			if (p.status == "Dead") cellStyle += " background-color:red;";
-			tableHTML += `<td style="${cellStyle}">Player ${p.id}: ${propertyValue}</td>`;
-			cellsInRow++;
-			if (cellsInRow === numCols || pcount === players.length - 1) {
-				while (cellsInRow < numCols && pcount === players.length - 1) {
-				   tableHTML += `<td></td>`; // Add empty cell
-				   cellsInRow++;
-				}
-				tableHTML += '</tr>';
-				cellsInRow = 0; // Reset cell counter for the next row
-			}
-			pcount++;
-		}
-		tableHTML += '</tbody></table>';
-		return tableHTML;
-	}
-
-	function r2t2(e) {
-		let result = "<table>";
-		for (let i in e) {
-			result += "<tr>";
-			for (let j in e[i]) {result += `<td>${e[i][j]}</td>`;}
-			result += "</tr>";
-		}
-		result += "</table>";
-		return result;
 	}
 
 	function setPlayerAngles() {
